@@ -30,7 +30,7 @@ db:
   mysql:
     host: '43.155.4.176'
     username: 'root'
-    password: 'my-secret-pw'
+    password: '123456'
     database: 'mysql'
     port: 3306
     charset: 'utf8mb4'

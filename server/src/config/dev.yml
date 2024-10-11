@@ -28,10 +28,10 @@ cos:
 # 数据库配置
 db:
   mysql:
-    host: '127.0.0.1'
+    host: '43.155.4.176'
     username: 'root'
-    password: ''
-    database: 'admin_db'
+    password: '123456'
+    database: 'mysql'
     port: 3306
     charset: 'utf8mb4'
     logger: 'file'
@@ -44,8 +44,8 @@ db:
 
 # redis 配置
 redis:
-  host: 'localhost'
-  password: '*********'
+  host: '43.155.4.176'
+  password: '123456'
   port: 6379
   db: 2
   keyPrefix: ''

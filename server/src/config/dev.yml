@@ -64,6 +64,7 @@ perm:
         { path: '/register', method: 'POST' },
         { path: '/login', method: 'POST' },
         { path: '/perm/{id}', method: 'GET' },
+        { path: '/game/article/list', method: 'GET' },
         { path: '/upload', method: 'POST' },
       ]
 

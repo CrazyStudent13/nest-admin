@@ -73,7 +73,7 @@ export class GameArticleService {
       },
       updateGameAricleDto,
     );
-    return ResultData.ok();
+    return ResultData.ok('修改成功');
   }
 
   async remove(articleId: number) {

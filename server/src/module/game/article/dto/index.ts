@@ -1,4 +1,4 @@
-import { IsString, IsEnum, Length, IsOptional, IsNumber } from 'class-validator';
+import { IsDateString, IsString, IsEnum, Length, IsOptional, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { PagingDto } from 'src/common/dto/index';
 
@@ -20,6 +20,12 @@ export class CreateGameAricleDto {
   @IsString()
   @Length(0, 200)
   remark: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsDateString()
+  publishTime: string;
 
   @ApiProperty({
     required: true,

@@ -36,7 +36,6 @@ const handleOpen = (row) => {
   getArticle(articleId).then((res) => {
     drawer.title = `修改-${form.model.title}`
     form.model = res.data
-    form.model.content = form.model.content.slice(1, -1).replace(/\\n/g, '\n')
 
     form.model.updateTime = dayjs(form.model.updateTime).format('YYYY-MM-DD HH:mm:ss')
     form.model.createTime = dayjs(form.model.createTime).format('YYYY-MM-DD HH:mm:ss')

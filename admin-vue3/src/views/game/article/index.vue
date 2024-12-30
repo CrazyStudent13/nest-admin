@@ -39,18 +39,14 @@
           <!-- <dict-tag :options="sys_article_status" :value="scope.row.status" /> -->
         </template>
       </el-table-column>
-      <el-table-column label="发布时间" align="center" prop="publishTime" width="180">
-        <template #default="scope">
-          <!-- <span>{{ dayjs(scope.row.publishTime).format('YYYY-MM-DD HH:mm:ss') }}</span> -->
-        </template>
-      </el-table-column>
+      <el-table-column label="发布时间" align="center" prop="publishTime" width="180" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180" />
       <el-table-column label="修改时间" align="center" prop="updateTime" width="180" />
       <el-table-column label="操作" width="240" align="center" fixed="right" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button link type="primary" icon="View" @click="table.handlePreview(scope.row)">预览</el-button>
           <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['game:Article:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['game:Article:remove']">删除</el-button>
+          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['game:Article:remove']">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -65,6 +61,9 @@
         </el-form-item>
         <el-form-item label="文章简介" prop="remark">
           <el-input v-model="form.remark" placeholder="请输入文章简介" type="textarea" :rows="5" maxlength="200" show-word-limit />
+        </el-form-item>
+        <el-form-item label="发布时间" prop="publishTime">
+          <el-date-picker v-model="form.publishTime" type="datetime" placeholder="请选择发布时间" format="YYYY/MM/DD HH:mm:ss" />
         </el-form-item>
         <!-- todo: 文件上传公用组件的封装 -->
         <!-- <el-form-item label="文章封面" prop="remark">
@@ -121,7 +120,8 @@ const data = reactive({
   },
   rules: {
     title: [{ required: true, message: '文章名称不能为空', trigger: 'blur' }],
-    remark: [{ required: true, message: '文章简介不能为空', trigger: 'blur' }]
+    remark: [{ required: true, message: '文章简介不能为空', trigger: 'blur' }],
+    publishTime: [{ required: true, message: '发布时间不能为空', trigger: ['blur', 'change'] }]
   }
 })
 

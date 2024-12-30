@@ -30,7 +30,7 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
-  highlight: function (str, lang) {
+  highlight: (str, lang) => {
     // 当前时间加随机数生成唯一的id标识
     const codeIndex = parseInt(Date.now()) + Math.floor(Math.random() * 10000000)
     // 复制功能主要使用的是 clipboard.js
@@ -69,9 +69,6 @@ const md = new MarkdownIt({
   }
 })
 
-const result = ref('')
-result.value = md.render(props.value)
-
 onMounted(() => {
   const clipboard = new Clipboard('.copy-btn')
 
@@ -89,24 +86,12 @@ const resultStr = computed(() => {
   const val = props.value
   let result = ''
   if (val !== null && typeof val !== 'undefined' && val !== '') {
-    result = md.render(val)
+    // 处理换行问题,后续考虑将这段逻辑转到后端去处理
+    const tempStr = val.slice(1, -1).replace(/\\n/g, '\n')
+    result = md.render(tempStr)
   }
   return result || ''
 })
-
-// watch(
-//   props.value,
-//   (val) => {
-//     nextTick(() => {
-//       if (val !== null && typeof val !== 'undefined' && val !== '') {
-//         result.value = md.render(val)
-//       }
-//     })
-//   },
-//   {
-//     immediate: true
-//   }
-// )
 </script>
 
 <style lang="scss">

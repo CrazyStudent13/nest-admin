@@ -70,6 +70,7 @@ const md = new MarkdownIt({
 })
 
 onMounted(() => {
+  // 复制功能
   const clipboard = new Clipboard('.copy-btn')
 
   console.log(clipboard)
@@ -88,6 +89,7 @@ const resultStr = computed(() => {
   if (val !== null && typeof val !== 'undefined' && val !== '') {
     // 处理换行问题,后续考虑将这段逻辑转到后端去处理
     const tempStr = val.slice(1, -1).replace(/\\n/g, '\n')
+
     result = md.render(tempStr)
   }
   return result || ''
@@ -116,6 +118,19 @@ const resultStr = computed(() => {
   line-height: 22px !important;
   overflow: hidden !important;
 
+  .copy-btn {
+    position: absolute;
+    right: 16px;
+    top: 0;
+    z-index: 99;
+    color: #333;
+    padding: 4px;
+    cursor: pointer;
+    background-color: #fff;
+    border: 0;
+    border-radius: 2px;
+  }
+
   code {
     display: block !important;
     margin: 0 10px !important;
@@ -142,6 +157,7 @@ const resultStr = computed(() => {
       width: 6px;
     }
   }
+
   .line-numbers-rows {
     position: absolute;
     pointer-events: none;
@@ -174,23 +190,6 @@ const resultStr = computed(() => {
     z-index: 10;
     color: #999;
     pointer-events: none;
-  }
-}
-
-.hljs {
-  position: relative;
-
-  .copy-btn {
-    position: absolute;
-    right: 16px;
-    top: 0;
-    z-index: 99;
-    color: #333;
-    padding: 4px;
-    cursor: pointer;
-    background-color: #fff;
-    border: 0;
-    border-radius: 2px;
   }
 }
 </style>

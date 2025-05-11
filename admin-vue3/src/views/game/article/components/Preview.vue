@@ -1,17 +1,23 @@
 <template>
-  <el-drawer v-model="drawer.visible" title="文章详情" size="1200px" direction="rtl">
-    <el-tabs v-model="drawer.activeName" class="demo-tabs" @tab-click="handleClick">
+  <el-drawer v-model="drawer.visible" size="800px" direction="rtl">
+    <template #title>
+      <div class="drawer-title">
+        <h3>{{ drawer.title }}</h3>
+        <el-button type="primary" size="mini" @click="handleUpdate">修改</el-button>
+      </div>
+    </template>
+    <el-tabs v-model="drawer.activeName" style="margin-top: 0px" @tab-click="handleClick">
       <el-tab-pane label="基本信息" name="first">
         <h2 class="article-title">{{ form.model.title }}</h2>
-        <el-descriptions direction="vertical">
-          <el-descriptions-item label="文章简介" :span="3" label-class-name="desc-label">{{ form.model.remark }}</el-descriptions-item>
+        <el-descriptions>
           <el-descriptions-item label="发布时间" label-class-name="desc-label">{{ form.model.publishTime }}</el-descriptions-item>
           <el-descriptions-item label="创建时间" label-class-name="desc-label">{{ form.model.createTime }}</el-descriptions-item>
           <el-descriptions-item label="最后修改时间" :label-class-name="'desc-label'">{{ form.model.updateTime }}</el-descriptions-item>
+          <el-descriptions-item label="文章简介" direction="vertical" :span="3" label-class-name="desc-label">{{ form.model.remark }}</el-descriptions-item>
         </el-descriptions>
       </el-tab-pane>
       <el-tab-pane label="文章内容" name="detail">
-        <MdViewer :value="form.model.content" />
+        <MdViewer :value="form.model.content" style="float: left" />
       </el-tab-pane>
     </el-tabs>
   </el-drawer>
@@ -20,6 +26,7 @@
 <script setup>
 import { getArticle } from '@/api/game/article'
 import MdViewer from '@/components/MdViewer'
+const router = useRouter()
 
 const drawer = reactive({
   visible: false,
@@ -31,11 +38,18 @@ const form = reactive({
   model: {}
 })
 
+const handleUpdate = () => {
+  router.push({
+    path: '/game/article/edit',
+    query: { articleId: form.model.articleId }
+  })
+}
+
 const handleOpen = (row) => {
   const articleId = row.articleId || ids.value
   getArticle(articleId).then((res) => {
-    drawer.title = `修改-${form.model.title}`
     form.model = res.data
+    drawer.title = `文章-${form.model.title}`
 
     form.model.updateTime = dayjs(form.model.updateTime).format('YYYY-MM-DD HH:mm:ss')
     form.model.createTime = dayjs(form.model.createTime).format('YYYY-MM-DD HH:mm:ss')
@@ -54,6 +68,13 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+.drawer-title {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  font-weight: bold;
+}
+
 .article-title {
   width: 100vw;
   font-weight: 600;

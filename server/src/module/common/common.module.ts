@@ -16,8 +16,8 @@ import { RedisClientOptions } from '@songkeys/nestjs-redis';
           let redisConfig = {};
           if (process.env.NODE_ENV === 'development') {
             redisConfig = {
-              host: '111.229.29.214',
-              password: 'redis_kjkikp_6379',
+              host: '43.156.233.9',
+              password: 'redis_JQwn6f',
               port: 6379,
               db: 2,
               keyPrefix: '',

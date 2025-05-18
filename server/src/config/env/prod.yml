@@ -28,9 +28,9 @@ cos:
 # 数据库配置
 db:
   mysql:
-    host: '111.229.29.214'
+    host: '43.156.233.9'
     username: 'root'
-    password: 'mysql_6zaSGd'
+    password: 'mysql_WfWntA'
     database: 'mysql'
     port: 3306
     charset: 'utf8mb4'
@@ -44,8 +44,8 @@ db:
 
 # redis 配置
 redis:
-  host: '111.229.29.214'
-  password: 'redis_kjkikp_6379'
+  host: '43.156.233.9'
+  password: 'redis_JQwn6f'
   port: 6379
   db: 2
   keyPrefix: ''

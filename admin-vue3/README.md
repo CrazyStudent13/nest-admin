@@ -28,3 +28,12 @@ npm run build:stage
 # 构建生产环境
 npm run build:prod
 ```
+
+
+
+## 优化
+
+- 数据字典需要全局拉取
+- pina拆块引入，放弃综合引入的方式
+- 尽可能的用TS重构工具类方法
+

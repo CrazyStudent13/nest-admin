@@ -9,7 +9,7 @@ const configFileNameObj = {
 };
 
 export const getEnv = () => {
-  const env = process.env.NODE_ENV || 'production';
+  const env = process.env.NODE_ENV;
   return configFileNameObj[env];
 };
 

@@ -17,7 +17,8 @@ app:
     serveRoot: '/profile'
     # 文件大小限制，单位M
     maxSize: 10
-# 腾讯云cos配置
+
+# oss配置
 cos:
   secretId: ''
   secretKey: ''
@@ -25,14 +26,15 @@ cos:
   region: ''
   domain: ''
   location: ''
+
 # 数据库配置
 db:
   # mysql 配置
   mysql:
-    host: '127.0.0.1'
+    host: '111.229.29.214'
     username: 'root'
-    password: ''
-    database: 'admin_db'
+    password: 'mysql_6zaSGd'
+    database: 'mysql'
     port: 3306
     charset: 'utf8mb4'
     logger: 'file'
@@ -44,8 +46,8 @@ db:
     bigNumberStrings: true
   # redis 配置
   redis:
-    host: 'localhost123'
-    password: '*********'
+    host: '111.229.29.214'
+    password: 'redis_kjkikp_6379'
     port: 6379
     db: 2
     keyPrefix: ''
@@ -55,11 +57,21 @@ jwt:
   secretkey: 'you_secretkey'
   expiresin: '1h'
   refreshExpiresIn: '2h'
+
 # 权限 白名单配置
 perm:
   router:
     whitelist:
-      [{ path: '/captchaImage', method: 'GET' }, { path: '/register', method: 'POST' }, { path: '/login', method: 'POST' }, { path: '/perm/{id}', method: 'GET' }, { path: '/upload', method: 'POST' }]
+      [
+        { path: '/captchaImage', method: 'GET' },
+        { path: '/register', method: 'POST' },
+        { path: '/login', method: 'POST' },
+        { path: '/logout', method: 'POST' },
+        { path: '/perm/{id}', method: 'GET' },
+        { path: '/upload', method: 'POST' },
+        { path: '/game/article/guest/list', method: 'GET' },
+        { path: '/game/article/guest/detail', method: 'GET' },
+      ]
 
 # 用户相关
 # 初始密码， 重置密码

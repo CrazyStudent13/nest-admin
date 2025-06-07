@@ -31,9 +31,9 @@ cos:
 db:
   # mysql 配置
   mysql:
-    host: '43.156.233.9'
+    host: '111.229.29.214'
     username: 'root'
-    password: 'mysql_WfWntA'
+    password: 'mysql_6zaSGd'
     database: 'mysql'
     port: 3306
     charset: 'utf8mb4'
@@ -46,8 +46,8 @@ db:
     bigNumberStrings: true
   # redis 配置
   redis:
-    host: 'localhost123'
-    password: '*********'
+    host: '111.229.29.214'
+    password: 'redis_kjkikp_6379'
     port: 6379
     db: 2
     keyPrefix: ''

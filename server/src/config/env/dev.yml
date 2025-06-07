@@ -17,7 +17,8 @@ app:
     serveRoot: '/profile'
     # 文件大小限制，单位M
     maxSize: 10
-# 腾讯云cos配置
+
+# oss配置
 cos:
   secretId: ''
   secretKey: ''
@@ -25,6 +26,7 @@ cos:
   region: ''
   domain: ''
   location: ''
+
 # 数据库配置
 db:
   # mysql 配置
@@ -55,6 +57,7 @@ jwt:
   secretkey: 'you_secretkey'
   expiresin: '1h'
   refreshExpiresIn: '2h'
+
 # 权限 白名单配置
 perm:
   router:

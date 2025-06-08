@@ -103,6 +103,7 @@
 
 <script setup name="Notice">
 import { listNotice, getNotice, delNotice, addNotice, updateNotice } from '@/api/system/notice'
+import useTable from '@/hooks/useTable'
 
 const { proxy } = getCurrentInstance()
 const { sys_notice_status, sys_notice_type } = proxy.useDict('sys_notice_status', 'sys_notice_type')
@@ -137,11 +138,15 @@ const { queryParams, form, rules } = toRefs(data)
 /** 查询公告列表 */
 function getList() {
   loading.value = true
-  listNotice(queryParams.value).then((response) => {
-    noticeList.value = response.data.list
-    total.value = response.data.total
-    loading.value = false
-  })
+  useTable(listNotice, queryParams.value).request()
+
+  console.log('返回结果？', useTable(listNotice, queryParams.value).state)
+
+  //   listNotice(queryParams.value).then((response) => {
+  //     noticeList.value = response.data.list
+  //     total.value = response.data.total
+  //     loading.value = false
+  //   })
 }
 /** 取消按钮 */
 function cancel() {

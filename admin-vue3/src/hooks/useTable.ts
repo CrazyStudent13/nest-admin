@@ -1,9 +1,25 @@
 import { reactive } from 'vue'
-// import { debounce } from 'lodash'
-// import ElMessage from 'element-plus'
 
 // 后续参考一下这个
 // https://www.buerblog.cn/docs/study/web/use-table
+
+/**
+ * 定义pageInfo
+ */
+interface page {
+  current: number
+  size: number
+  total: number
+}
+
+/**
+ * 定义数据
+ */
+interface TableState {
+  page: page
+  loading: boolean
+  list: any[]
+}
 
 /**
  * @description table操作方法封装
@@ -12,7 +28,7 @@ import { reactive } from 'vue'
  */
 
 const useTable = (api, searchParam = {}) => {
-  const state = reactive({
+  const state = reactive<TableState>({
     loading: false,
     list: [],
     page: {
@@ -20,52 +36,73 @@ const useTable = (api, searchParam = {}) => {
       size: 15,
       total: 1
     }
-  })
+  }) as any
 
   // 获取表格列表数据
-
   const request = async () => {
-    state.loading = true
-
     const params = {
       current: state.page.current,
       size: state.page.size,
       ...searchParam
     }
-    try {
-      const { code, data, msg } = await api(params)
 
-      state.loading = false
+    state.loading = true
+    try {
+      const { code, data } = await api(params)
       if (code === 200) {
-        state.list = data.list
+        // todo：因为reative的问题，直接清空和赋值无效，只能用push方法，希望能有更优雅的方法
+        state.list.length = 0
+        state.list.push(...data.list)
         state.page.total = data.total
-      } else {
-        console.log(msg)
       }
     } catch (e) {
-      console.log(e)
+      console.log('列表数据获取报错：', e)
     } finally {
       state.loading = false
-      console.log('finally,我最后用了useTable这个Khooks', '测试--->>>')
     }
   }
 
-  // 分页切换方法
-  const handleSizeChange = (val) => {
-    state.page.size = val
+  // 分页页码切换
+  const onPageChange = (page: number) => {
+    state.page.current = page
     request()
   }
 
-  // 表格数据搜索, 防抖(需安装lodash)
-  //   const searchData = debounce((request) => {
-  //     request()
-  //   }, 500)
+  // 分页大小切换
+  const onSizeChange = (size: number) => {
+    state.page.size = size
+    request()
+  }
+
+  // 搜索
+  const onSearch = () => {
+    state.page.current = 1
+    request()
+  }
+
+  // 重置搜索
+  const onReset = () => {
+    state.page.current = 1
+    request()
+  }
+
+  // 刷新
+  const onRefresh = () => {
+    request()
+  }
+
+  // 初始化请求数据
+  request()
 
   // 返回相关变量与方法
   return {
     state,
     request,
-    handleSizeChange
+    onSizeChange,
+    onPageChange,
+    onSearch,
+    onReset,
+    onRefresh
   }
 }
 

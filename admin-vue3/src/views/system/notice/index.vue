@@ -31,7 +31,7 @@
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
+    <el-table v-loading="notice.state.loading" :data="noticeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="noticeId" width="100" />
       <el-table-column label="公告标题" align="center" prop="noticeTitle" :show-overflow-tooltip="true" />
@@ -93,7 +93,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
+          <!-- <el-button type="primary" @click="submitForm">确 定</el-button> -->
           <el-button @click="cancel">取 消</el-button>
         </div>
       </template>
@@ -102,23 +102,6 @@
 </template>
 
 <script setup name="Notice">
-import { listNotice, getNotice, delNotice, addNotice, updateNotice } from '@/api/system/notice'
-import useTable from '@/hooks/useTable'
-const notice = useTable(listNotice, queryParams.value)
-
-const { proxy } = getCurrentInstance()
-const { sys_notice_status, sys_notice_type } = proxy.useDict('sys_notice_status', 'sys_notice_type')
-
-const noticeList = ref([])
-const open = ref(false)
-const loading = ref(true)
-const showSearch = ref(true)
-const ids = ref([])
-const single = ref(true)
-const multiple = ref(true)
-const total = ref(0)
-const title = ref('')
-
 const data = reactive({
   form: {},
   queryParams: {
@@ -134,20 +117,28 @@ const data = reactive({
   }
 })
 
+import { listNotice, getNotice, delNotice, addNotice, updateNotice } from '@/api/system/notice'
+import useTable from '@/hooks/useTable'
+const notice = useTable(listNotice, data.queryParams)
+
+const noticeList = notice.state.list
+const total = notice.state.total
+
+const { proxy } = getCurrentInstance()
+const { sys_notice_status, sys_notice_type } = proxy.useDict('sys_notice_status', 'sys_notice_type')
+
+const open = ref(false)
+const showSearch = ref(true)
+const ids = ref([])
+const single = ref(true)
+const multiple = ref(true)
+const title = ref('')
+
 const { queryParams, form, rules } = toRefs(data)
 
 /** 查询公告列表 */
 function getList() {
-  loading.value = true
   notice.request()
-
-  console.log(notice.state)
-
-  //   listNotice(queryParams.value).then((response) => {
-  //     noticeList.value = response.data.list
-  //     total.value = response.data.total
-  //     loading.value = false
-  //   })
 }
 /** 取消按钮 */
 function cancel() {
@@ -167,13 +158,12 @@ function reset() {
 }
 /** 搜索按钮操作 */
 function handleQuery() {
-  queryParams.value.pageNum = 1
-  getList()
+  notice.onSearch()
 }
 /** 重置按钮操作 */
 function resetQuery() {
   proxy.resetForm('queryRef')
-  handleQuery()
+  notice.onSearch()
 }
 /** 多选框选中数据 */
 function handleSelectionChange(selection) {
@@ -198,25 +188,25 @@ function handleUpdate(row) {
   })
 }
 /** 提交按钮 */
-function submitForm() {
-  proxy.$refs['noticeRef'].validate((valid) => {
-    if (valid) {
-      if (form.value.noticeId != undefined) {
-        updateNotice(form.value).then((response) => {
-          proxy.$modal.msgSuccess('修改成功')
-          open.value = false
-          getList()
-        })
-      } else {
-        addNotice(form.value).then((response) => {
-          proxy.$modal.msgSuccess('新增成功')
-          open.value = false
-          getList()
-        })
-      }
-    }
-  })
-}
+// function submitForm() {
+//   // proxy.$refs['noticeRef'].validate((valid) => {
+//   //   if (valid) {
+//   //     if (form.value.noticeId != undefined) {
+//   //       updateNotice(form.value).then((response) => {
+//   //         proxy.$modal.msgSuccess('修改成功')
+//   //         open.value = false
+//   //         getList()
+//   //       })
+//   //     } else {
+//   //       addNotice(form.value).then((response) => {
+//   //         proxy.$modal.msgSuccess('新增成功')
+//   //         open.value = false
+//   //         getList()
+//   //       })
+//   //     }
+//   //   }
+//   // })
+// }
 /** 删除按钮操作 */
 function handleDelete(row) {
   const noticeIds = row.noticeId || ids.value
@@ -231,6 +221,4 @@ function handleDelete(row) {
     })
     .catch(() => {})
 }
-
-getList()
 </script>

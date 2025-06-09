@@ -5,16 +5,6 @@ import { reactive } from 'vue'
 // 后续参考一下这个
 // https://www.buerblog.cn/docs/study/web/use-table
 
-const table = reactive({
-  loading: false,
-  list: [],
-  page: {
-    current: 1,
-    size: 15,
-    total: 1
-  }
-})
-
 /**
  * @description table操作方法封装
  * @param {Function} api 表格列表数据接口
@@ -22,37 +12,47 @@ const table = reactive({
  */
 
 const useTable = (api, searchParam = {}) => {
+  const state = reactive({
+    loading: false,
+    list: [],
+    page: {
+      current: 1,
+      size: 15,
+      total: 1
+    }
+  })
+
   // 获取表格列表数据
 
   const request = async () => {
-    table.loading = true
+    state.loading = true
 
     const params = {
-      current: table.page.current,
-      size: table.page.size,
+      current: state.page.current,
+      size: state.page.size,
       ...searchParam
     }
     try {
       const { code, data, msg } = await api(params)
 
-      table.loading = false
+      state.loading = false
       if (code === 200) {
-        table.list = data.list
-        table.page.total = data.total
+        state.list = data.list
+        state.page.total = data.total
       } else {
         console.log(msg)
       }
     } catch (e) {
       console.log(e)
     } finally {
-      table.loading = false
+      state.loading = false
       console.log('finally,我最后用了useTable这个Khooks', '测试--->>>')
     }
   }
 
   // 分页切换方法
   const handleSizeChange = (val) => {
-    table.page.size = val
+    state.page.size = val
     request()
   }
 
@@ -63,7 +63,7 @@ const useTable = (api, searchParam = {}) => {
 
   // 返回相关变量与方法
   return {
-    table,
+    state,
     request,
     handleSizeChange
   }

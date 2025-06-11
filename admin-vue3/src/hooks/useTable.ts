@@ -79,7 +79,6 @@ const useTable = (api, searchParam = {}) => {
   // 搜索
   const onSearch = () => {
     state.page.current = 1
-    console.log('搜索方法')
     request()
   }
 
@@ -87,7 +86,6 @@ const useTable = (api, searchParam = {}) => {
   const onReset = () => {
     state.page.current = 1
     searchParam = {}
-    console.log('重置方法')
     request()
   }
 

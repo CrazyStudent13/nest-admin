@@ -2,10 +2,10 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
       <el-form-item label="公告标题" prop="noticeTitle">
-        <el-input v-model="queryParams.noticeTitle" placeholder="请输入公告标题" clearable @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.noticeTitle" placeholder="请输入公告标题" clearable @keyup.enter="notice.onSearch" />
       </el-form-item>
       <el-form-item label="操作人员" prop="createBy">
-        <el-input v-model="queryParams.createBy" placeholder="请输入操作人员" clearable @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.createBy" placeholder="请输入操作人员" clearable @keyup.enter="notice.onSearch" />
       </el-form-item>
       <el-form-item label="类型" prop="noticeType">
         <el-select v-model="queryParams.noticeType" placeholder="请选择公告类型" clearable>
@@ -102,6 +102,9 @@
 </template>
 
 <script setup name="Notice">
+const { proxy } = getCurrentInstance()
+const { sys_notice_status, sys_notice_type } = proxy.useDict('sys_notice_status', 'sys_notice_type')
+
 const data = reactive({
   form: {},
   queryParams: {
@@ -117,12 +120,9 @@ const data = reactive({
 
 import { listNotice, getNotice, delNotice, addNotice, updateNotice } from '@/api/system/notice'
 import useTable from '@/hooks/useTable'
-const notice = useTable(listNotice, data.queryParams)
-
+const queryRef = ref()
+const notice = useTable(listNotice, data.queryParams, queryRef)
 const noticeList = notice.state.list
-
-const { proxy } = getCurrentInstance()
-const { sys_notice_status, sys_notice_type } = proxy.useDict('sys_notice_status', 'sys_notice_type')
 
 const open = ref(false)
 const showSearch = ref(true)
@@ -133,10 +133,6 @@ const title = ref('')
 
 const { queryParams, form, rules } = toRefs(data)
 
-/** 查询公告列表 */
-function getList() {
-  notice.request()
-}
 /** 取消按钮 */
 function cancel() {
   open.value = false
@@ -153,15 +149,7 @@ function reset() {
   }
   proxy.resetForm('noticeRef')
 }
-/** 搜索按钮操作 */
-function handleQuery() {
-  notice.onSearch()
-}
-/** 重置按钮操作 */
-function resetQuery() {
-  proxy.resetForm('queryRef')
-  notice.onSearch()
-}
+
 /** 多选框选中数据 */
 function handleSelectionChange(selection) {
   ids.value = selection.map((item) => item.noticeId)
@@ -192,13 +180,13 @@ function handleUpdate(row) {
 //   //       updateNotice(form.value).then((response) => {
 //   //         proxy.$modal.msgSuccess('修改成功')
 //   //         open.value = false
-//   //         getList()
+//   //         notice.request()
 //   //       })
 //   //     } else {
 //   //       addNotice(form.value).then((response) => {
 //   //         proxy.$modal.msgSuccess('新增成功')
 //   //         open.value = false
-//   //         getList()
+//   //         notice.request()
 //   //       })
 //   //     }
 //   //   }
@@ -213,7 +201,7 @@ function handleDelete(row) {
       return delNotice(noticeIds)
     })
     .then(() => {
-      getList()
+      notice.request()
       proxy.$modal.msgSuccess('删除成功')
     })
     .catch(() => {})

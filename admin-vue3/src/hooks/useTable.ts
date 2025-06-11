@@ -25,9 +25,10 @@ interface TableState {
  * @description table操作方法封装
  * @param {Function} api 表格列表数据接口
  * @param {Object} searchParam 表格查询参数
+ * @param {Object} formRef 表单ref,用于处理清空form的校验结果等操作
  */
 
-const useTable = (api, searchParam = {}) => {
+const useTable = (api, searchParam, formRef: any) => {
   const state = reactive<TableState>({
     loading: false,
     list: [],
@@ -36,7 +37,7 @@ const useTable = (api, searchParam = {}) => {
       pageSize: 20,
       total: 1
     }
-  }) as any
+  })
 
   // 获取表格列表数据
   const request = async () => {
@@ -45,8 +46,6 @@ const useTable = (api, searchParam = {}) => {
       pageSize: state.page.pageSize,
       ...searchParam
     }
-
-    console.log('请求参数：', params)
 
     state.loading = true
     try {
@@ -66,26 +65,26 @@ const useTable = (api, searchParam = {}) => {
 
   // 分页页码切换
   const onPageChange = (page: number) => {
-    state.page.current = page
+    state.page.pageNum = page
     request()
   }
 
   // 分页大小切换
   const onSizeChange = (size: number) => {
-    state.page.size = size
+    state.page.pageSize = size
     request()
   }
 
   // 搜索
   const onSearch = () => {
-    state.page.current = 1
+    state.page.pageNum = 1
     request()
   }
 
   // 重置搜索
   const onReset = () => {
-    state.page.current = 1
-    searchParam = {}
+    state.page.pageNum = 1
+    formRef.value.resetFields()
     request()
   }
 

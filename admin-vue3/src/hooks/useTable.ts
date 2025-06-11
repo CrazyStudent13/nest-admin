@@ -7,8 +7,8 @@ import { reactive } from 'vue'
  * 定义pageInfo
  */
 interface page {
-  current: number
-  size: number
+  pageNum: number
+  pageSize: number
   total: number
 }
 
@@ -32,8 +32,8 @@ const useTable = (api, searchParam = {}) => {
     loading: false,
     list: [],
     page: {
-      current: 1,
-      size: 15,
+      pageNum: 1,
+      pageSize: 20,
       total: 1
     }
   }) as any
@@ -41,10 +41,12 @@ const useTable = (api, searchParam = {}) => {
   // 获取表格列表数据
   const request = async () => {
     const params = {
-      current: state.page.current,
-      size: state.page.size,
+      pageNum: state.page.pageNum,
+      pageSize: state.page.pageSize,
       ...searchParam
     }
+
+    console.log('请求参数：', params)
 
     state.loading = true
     try {
@@ -56,7 +58,7 @@ const useTable = (api, searchParam = {}) => {
         state.page.total = data.total
       }
     } catch (e) {
-      console.log('列表数据获取报错：', e)
+      console.log('list error：', e)
     } finally {
       state.loading = false
     }
@@ -77,12 +79,15 @@ const useTable = (api, searchParam = {}) => {
   // 搜索
   const onSearch = () => {
     state.page.current = 1
+    console.log('搜索方法')
     request()
   }
 
   // 重置搜索
   const onReset = () => {
     state.page.current = 1
+    searchParam = {}
+    console.log('重置方法')
     request()
   }
 

@@ -2,19 +2,19 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
       <el-form-item label="公告标题" prop="noticeTitle">
-        <el-input v-model="queryParams.noticeTitle" placeholder="请输入公告标题" clearable style="width: 200px" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.noticeTitle" placeholder="请输入公告标题" clearable @keyup.enter="handleQuery" />
       </el-form-item>
       <el-form-item label="操作人员" prop="createBy">
-        <el-input v-model="queryParams.createBy" placeholder="请输入操作人员" clearable style="width: 200px" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.createBy" placeholder="请输入操作人员" clearable @keyup.enter="handleQuery" />
       </el-form-item>
       <el-form-item label="类型" prop="noticeType">
-        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable style="width: 200px">
+        <el-select v-model="queryParams.noticeType" placeholder="请选择公告类型" clearable>
           <el-option v-for="dict in sys_notice_type" :key="dict.value" :label="dict.label" :value="dict.value" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button :loading="notice.state.loading" type="primary" icon="Search" @click="notice.onSearch">搜索</el-button>
+        <el-button :loading="notice.state.loading" icon="Refresh" @click="notice.onReset">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -28,7 +28,7 @@
       <el-col :span="1.5">
         <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['system:notice:remove']">删除</el-button>
       </el-col>
-      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" />
     </el-row>
 
     <el-table v-loading="notice.state.loading" :data="noticeList" @selection-change="handleSelectionChange">
@@ -59,7 +59,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize" @pagination="getList" />
+    <pagination v-show="notice.state.page.total > 0" :total="notice.state.page.total" v-model:page="notice.state.page.pageNum" v-model:limit="notice.state.page.pageSize" @pagination="getList" />
 
     <!-- 添加或修改公告对话框 -->
     <el-dialog :title="title" v-model="open" width="780px" append-to-body>
@@ -105,11 +105,9 @@
 const data = reactive({
   form: {},
   queryParams: {
-    pageNum: 1,
-    pageSize: 10,
-    noticeTitle: undefined,
-    createBy: undefined,
-    status: undefined
+    noticeTitle: '',
+    createBy: null,
+    status: null
   },
   rules: {
     noticeTitle: [{ required: true, message: '公告标题不能为空', trigger: 'blur' }],
@@ -122,7 +120,6 @@ import useTable from '@/hooks/useTable'
 const notice = useTable(listNotice, data.queryParams)
 
 const noticeList = notice.state.list
-const total = notice.state.total
 
 const { proxy } = getCurrentInstance()
 const { sys_notice_status, sys_notice_type } = proxy.useDict('sys_notice_status', 'sys_notice_type')

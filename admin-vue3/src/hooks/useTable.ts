@@ -21,7 +21,7 @@ interface page {
 interface apiParams {
   get: (id: number | string) => Promise<any>
   delete?: (id: number | string) => Promise<any>
-  export?: (id: number | string) => Promise<any>
+  export?: (params: any, options: any) => Promise<any>
 }
 
 /**
@@ -34,19 +34,30 @@ interface TableState {
 }
 
 /**
+ * table参数
+ * @param get 获取列表数据
+ * @param export 导出接口
+ */
+interface options {
+  tableKey: string // 表格主键字段
+  name: string // 模块名称
+}
+
+/**
  * @description table操作方法封装
  * @param {Function} api 表格列表数据接口
  * @param {Object} searchParam 表格查询参数
  * @param {Object} formRef 表单ref,用于处理清空form的校验结果等操作
+ * @param {Object} options 配置项,配置下载文件名称和表格主键字段
  */
 
-const useTable = (api: apiParams, searchParam, formRef: any) => {
+const useTable = (api: apiParams, searchParam, formRef: any, options: options) => {
   const state = reactive<TableState>({
     loading: false,
     list: [],
     page: {
       pageNum: 1,
-      pageSize: 20,
+      pageSize: 10,
       total: 1
     }
   })
@@ -101,13 +112,13 @@ const useTable = (api: apiParams, searchParam, formRef: any) => {
   }
 
   // 删除
-  const onRowDelete = async (id: number | string) => {
+  const onDelete = async (ids: number | string) => {
     state.loading = true
     try {
-      const { code } = await api.delete(id)
+      const { code } = await api.delete(ids)
       if (code === 200) {
         ElMessage.success('删除成功')
-        request()
+        await request()
       }
     } catch (e) {
       ElMessage.error('删除失败')
@@ -124,7 +135,7 @@ const useTable = (api: apiParams, searchParam, formRef: any) => {
       pageSize: state.page.pageSize,
       ...searchParam
     }
-    api.export(params)
+    api.export(params, options)
   }
 
   // 刷新
@@ -143,6 +154,8 @@ const useTable = (api: apiParams, searchParam, formRef: any) => {
     onPageChange,
     onSearch,
     onReset,
+    onDelete,
+    onExport,
     onRefresh
   }
 }

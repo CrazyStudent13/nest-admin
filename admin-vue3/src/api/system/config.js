@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { download } from '@/utils/request'
 
 // 查询参数列表
 export function listConfig(query) {
@@ -49,6 +50,12 @@ export function delConfig(configId) {
     url: '/system/config/' + configId,
     method: 'delete'
   })
+}
+
+// 导出参数配置
+export function exportConfig(query, options) {
+  const fileName = `${options.name}_${new Date().getTime()}.xlsx`
+  return download('system/config/export', { ...query }, fileName)
 }
 
 // 刷新参数缓存

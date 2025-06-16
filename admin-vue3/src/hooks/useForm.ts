@@ -27,38 +27,26 @@ interface apiParams {
  * @param api 请求的api,将新增修改删除传入
  * @param formRef 表单的ref
  * @param key 表单的key，id关键字，用来获取，修改表单数据
+ * @param defaultForm 默认的表单数据
  */
-const useForm = (api: apiParams, formRef: any, key: string) => {
+const useForm = (api: apiParams, formRef: any, key: string, defaultForm: any = {}) => {
   const state = reactive<FormState>({
     loading: false, // 表单加载状态
     open: false, // 弹窗是否打开
     title: '', // 弹窗标题
-    form: {} // 表单数据
+    form: Object.assign({}, defaultForm) // 表单数据
   })
 
   // 重置表单
   const onReset = () => {
     formRef.value.resetFields()
-    state.form = {}
+    state.form = Object.assign({}, defaultForm)
   }
 
   // 关闭弹窗
   const onCancel = () => {
     formRef.value.resetFields()
     state.open = false
-  }
-
-  // 删除单行或多行数据
-  const onRowDelete = async (ids: string | number) => {
-    state.loading = true
-    try {
-      await api.delete(ids)
-      ElMessage.success('删除成功')
-    } catch (error) {
-      ElMessage.error('删除失败')
-    } finally {
-      state.loading = false
-    }
   }
 
   // 打开表单，新增或修改表单
@@ -79,8 +67,8 @@ const useForm = (api: apiParams, formRef: any, key: string) => {
         state.loading = false
       }
     } else {
-      state.form = {}
       state.title = '添加'
+      state.form = Object.assign({}, defaultForm)
       nextTick(() => {
         state.loading = false
         formRef.value.resetFields()
@@ -116,8 +104,7 @@ const useForm = (api: apiParams, formRef: any, key: string) => {
     onReset,
     onCancel,
     onOpenForm,
-    onSubmit,
-    onRowDelete
+    onSubmit
   }
 }
 

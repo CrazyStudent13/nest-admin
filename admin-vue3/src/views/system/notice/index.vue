@@ -65,7 +65,7 @@
     />
 
     <!-- 添加或修改公告对话框 -->
-    <el-dialog :title="noticeForm.state.title" v-model="noticeForm.state.open" width="800px" append-to-body>
+    <el-dialog :title="`${noticeForm.state.title}-${modules.name}`" v-model="noticeForm.state.open" width="800px" append-to-body>
       <el-form v-loading="noticeForm.state.loading" ref="noticeFormRef" :model="noticeForm.state.form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
@@ -112,6 +112,11 @@ import { listNotice, getNotice, delNotice, addNotice, updateNotice } from '@/api
 import useTable from '@/hooks/useTable'
 import useForm from '@/hooks/useForm'
 
+// 当前单表模块配置
+const modules = {
+  tableKey: 'noticeId', // 表格主键字段
+  name: '通知公告' // 模块名称
+}
 // 列表
 const queryRef = ref()
 const queryParams = reactive({
@@ -119,7 +124,7 @@ const queryParams = reactive({
   createBy: null,
   status: null
 })
-const noticeTable = useTable({ get: listNotice }, queryParams, queryRef)
+const noticeTable = useTable({ get: listNotice, delete: delNotice }, queryParams, queryRef)
 
 // 表单
 const noticeFormRef = ref()
@@ -127,12 +132,7 @@ const rules = {
   noticeTitle: [{ required: true, message: '请输入公告标题', trigger: 'blur' }],
   noticeType: [{ required: true, message: '请选择公告类型', trigger: 'change' }]
 }
-const noticeForm = useForm({ add: addNotice, update: updateNotice, delete: delNotice, get: getNotice }, noticeFormRef, 'noticeId')
-
-const showSearch = ref(true)
-const ids = ref([])
-const single = ref(true)
-const multiple = ref(true)
+const noticeForm = useForm({ add: addNotice, update: updateNotice, delete: delNotice, get: getNotice }, noticeFormRef, modules.tableKey)
 
 // 新增操作
 const handleAdd = () => {
@@ -160,24 +160,27 @@ const handleCancel = () => {
   noticeForm.onCancel()
 }
 
+// 列表控制相关变量
+const showSearch = ref(true)
+const ids = ref([])
+const single = ref(true)
+const multiple = ref(true)
 // 多选框选中数据
 const handleSelectionChange = (selection) => {
-  ids.value = selection.map((item) => item.noticeId)
+  ids.value = selection.map((item) => item[modules.tableKey])
   single.value = selection.length != 1
   multiple.value = !selection.length
 }
 
 // 删除操作
 const handleDelete = (row) => {
-  const noticeIds = row.noticeId || ids.value
-  ElMessageBox.confirm('您确认删除该公告吗？', '删除提示', {
+  const noticeIds = row[modules.tableKey] || ids.value
+  ElMessageBox.confirm('您确认要删除该数据吗？', '删除提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    noticeForm.onRowDelete(noticeIds).then(() => {
-      noticeTable.request()
-    })
+    noticeTable.onDelete(noticeIds)
   })
 }
 </script>

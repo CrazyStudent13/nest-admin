@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 
 // 后续参考一下这个
 // https://www.buerblog.cn/docs/study/web/use-table
@@ -19,6 +20,7 @@ interface page {
  */
 interface apiParams {
   get: (id: number | string) => Promise<any>
+  delete?: (id: number | string) => Promise<any>
   export?: (id: number | string) => Promise<any>
 }
 
@@ -96,6 +98,23 @@ const useTable = (api: apiParams, searchParam, formRef: any) => {
     state.page.pageNum = 1
     formRef.value.resetFields()
     request()
+  }
+
+  // 删除
+  const onRowDelete = async (id: number | string) => {
+    state.loading = true
+    try {
+      const { code } = await api.delete(id)
+      if (code === 200) {
+        ElMessage.success('删除成功')
+        request()
+      }
+    } catch (e) {
+      ElMessage.error('删除失败')
+      console.log('delete error：', e)
+    } finally {
+      state.loading = false
+    }
   }
 
   // 导出Excel

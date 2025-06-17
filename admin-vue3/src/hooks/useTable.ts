@@ -19,13 +19,16 @@ interface page {
  * @param export 导出接口
  */
 interface apiParams {
-  get: (id: number | string) => Promise<any>
-  delete?: (id: number | string) => Promise<any>
-  export?: (params: any, options: any) => Promise<any>
+  get: (params: any) => Promise<{ code: number; data?: { list: []; total: number } }>
+  delete?: (ids: string | number) => Promise<{ code: number }>
+  export?: (params: any, options: any) => Promise<void>
 }
 
 /**
  * 定义数据
+ * @param pageNum 当前页码
+ * @param pageSize 每页显示多少条数据
+ * @param total 总数
  */
 interface TableState {
   page: page
@@ -35,12 +38,12 @@ interface TableState {
 
 /**
  * table参数
- * @param get 获取列表数据
- * @param export 导出接口
+ * @param {String} tableKey 表格主键字段
+ * @param {String} name 模块名称
  */
 interface options {
-  tableKey: string // 表格主键字段
-  name: string // 模块名称
+  tableKey: string
+  name: string
 }
 
 /**
@@ -78,6 +81,8 @@ const useTable = (api: apiParams, searchParam, formRef: any, options: options) =
         state.list.length = 0
         state.list.push(...data.list)
         state.page.total = data.total
+      } else {
+        ElMessage.error('获取列表数据失败')
       }
     } catch (e) {
       console.log('list error：', e)
@@ -119,6 +124,8 @@ const useTable = (api: apiParams, searchParam, formRef: any, options: options) =
       if (code === 200) {
         ElMessage.success('删除成功')
         await request()
+      } else {
+        ElMessage.error('删除失败')
       }
     } catch (e) {
       ElMessage.error('删除失败')

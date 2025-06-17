@@ -9,17 +9,25 @@ interface FormState {
 }
 
 /**
+ * options参数
+ * @param {String} tableKey 表格主键字段
+ * @param {String} name 模块名称
+ */
+interface options {
+  tableKey: string
+  name: string
+}
+
+/**
  * api参数
  * @param get 获取单条数据
  * @param add 新增数据
- * @param delete 删除数据
  * @param update 修改数据
  */
 interface apiParams {
-  get?: (id: number | string) => Promise<any>
-  add?: (params: any) => Promise<any>
-  delete?: (id: number | string) => Promise<any>
-  update?: (params: any) => Promise<any>
+  get: (id: number | string) => Promise<any>
+  add: (params: any) => Promise<any>
+  update: (params: any) => Promise<any>
 }
 
 /**
@@ -29,7 +37,7 @@ interface apiParams {
  * @param key 表单的key，id关键字，用来获取，修改表单数据
  * @param defaultForm 默认的表单数据
  */
-const useForm = (api: apiParams, formRef: any, key: string, defaultForm: any = {}) => {
+const useForm = (api: apiParams, formRef: any, options: options = { tableKey: 'id', name: '' }, defaultForm: any = {}) => {
   const state = reactive<FormState>({
     loading: false, // 表单加载状态
     open: false, // 弹窗是否打开
@@ -56,9 +64,10 @@ const useForm = (api: apiParams, formRef: any, key: string, defaultForm: any = {
     // 判断是修改还是添加操作
     if (row) {
       try {
-        const formId = row[key]
+        const formId = row[options.tableKey]
 
         state.title = formId ? '修改' : '添加'
+        state.title += options.name
         const res = await api.get(formId) // 这里后续要补充一个类型
         state.form = res.data
       } catch (error) {
@@ -67,7 +76,7 @@ const useForm = (api: apiParams, formRef: any, key: string, defaultForm: any = {
         state.loading = false
       }
     } else {
-      state.title = '添加'
+      state.title = '添加' + options.name
       state.form = Object.assign({}, defaultForm)
       nextTick(() => {
         state.loading = false
@@ -79,18 +88,19 @@ const useForm = (api: apiParams, formRef: any, key: string, defaultForm: any = {
   // 提交表单，新增或修改表单数据
   const onSubmit = async () => {
     const form = state.form
-    const formId = form[key]
+    const formId = form[options.tableKey]
 
     state.loading = true
 
     try {
       const operate = formId ? '修改' : '新增'
+      const title = `${operate}${options.name}`
       if (formId) {
         await api.update(form)
       } else {
         await api.add(form)
       }
-      ElMessage.success(`${operate}成功`)
+      ElMessage.success(`${title}成功`)
     } catch (error) {
       ElMessage.error('修改失败')
     } finally {

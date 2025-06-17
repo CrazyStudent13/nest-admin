@@ -82,7 +82,7 @@
   </div>
 
   <!-- 添加或修改参数配置对话框 -->
-  <el-dialog :title="`${configForm.state.title}-${modules.name}`" v-model="configForm.state.open" width="600px" append-to-body>
+  <el-dialog :title="`${configForm.state.title}`" v-model="configForm.state.open" width="600px" append-to-body>
     <el-form v-loading="configForm.state.loading" ref="configFormRef" :model="configForm.state.form" :rules="rules" label-width="120px">
       <el-form-item label="参数名称" prop="configName">
         <el-input v-model="configForm.state.form.configName" placeholder="请输入参数名称" />
@@ -98,7 +98,7 @@
           <el-tooltip effect="dark" content="系统内置，代表该行配置不可删除，是代表不可删除，否代表可以删除" placement="top-start">
             <div class="tips">
               <div class="tips-icon tips-item">
-                <QuestionFilled />
+                <QuestionFilled style="font-size: 16px" />
               </div>
               <div class="tips-text tips-item">系统内置</div>
             </div>
@@ -153,7 +153,7 @@ const rules = {
   configValue: [{ required: true, message: '参数键值不能为空', trigger: 'blur' }]
 }
 const defaultForm = { configName: '', configKey: '', configValue: '', configType: 'Y' }
-const configForm = useForm({ add: addConfig, update: updateConfig, delete: delConfig, get: getConfig }, configFormRef, modules.tableKey, defaultForm)
+const configForm = useForm({ add: addConfig, update: updateConfig, delete: delConfig, get: getConfig }, configFormRef, modules, defaultForm)
 
 // 新增操作
 const handleAdd = () => {

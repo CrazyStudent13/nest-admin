@@ -65,7 +65,7 @@
     />
 
     <!-- 添加或修改公告对话框 -->
-    <el-dialog :title="`${noticeForm.state.title}-${modules.name}`" v-model="noticeForm.state.open" width="800px" append-to-body>
+    <el-dialog :title="`${noticeForm.state.title}`" v-model="noticeForm.state.open" width="800px" append-to-body>
       <el-form v-loading="noticeForm.state.loading" ref="noticeFormRef" :model="noticeForm.state.form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
@@ -132,7 +132,8 @@ const rules = {
   noticeTitle: [{ required: true, message: '请输入公告标题', trigger: 'blur' }],
   noticeType: [{ required: true, message: '请选择公告类型', trigger: 'change' }]
 }
-const noticeForm = useForm({ add: addNotice, update: updateNotice, delete: delNotice, get: getNotice }, noticeFormRef, modules.tableKey)
+const defaultForm = { noticeTitle: '', noticeType: '', status: '0', noticeContent: '' }
+const noticeForm = useForm({ add: addNotice, update: updateNotice, delete: delNotice, get: getNotice }, noticeFormRef, modules, defaultForm)
 
 // 新增操作
 const handleAdd = () => {

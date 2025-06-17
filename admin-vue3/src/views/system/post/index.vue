@@ -64,7 +64,7 @@
     />
 
     <!-- 添加或修改岗位对话框 -->
-    <el-dialog :title="`${postForm.state.title}-${modules.name}`" v-model="postForm.state.open" width="500px" append-to-body>
+    <el-dialog :title="`${postForm.state.title}`" v-model="postForm.state.open" width="500px" append-to-body>
       <el-form ref="postFormRef" :model="postForm.state.form" :rules="rules" label-width="80px">
         <el-form-item label="岗位名称" prop="postName">
           <el-input v-model="postForm.state.form.postName" placeholder="请输入岗位名称" />
@@ -125,7 +125,7 @@ const rules = {
   postSort: [{ required: true, message: '岗位顺序不能为空', trigger: 'blur' }]
 }
 const defaultForm = { postCode: '', postName: '', postSort: 0, status: '0', remark: '' }
-const postForm = useForm({ add: addPost, update: updatePost, delete: delPost, get: getPost }, postFormRef, modules.tableKey, defaultForm)
+const postForm = useForm({ add: addPost, update: updatePost, delete: delPost, get: getPost }, postFormRef, modules, defaultForm)
 
 // 控制变量
 const showSearch = ref(true)

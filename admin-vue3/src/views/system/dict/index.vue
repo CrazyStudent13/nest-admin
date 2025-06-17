@@ -230,7 +230,7 @@ const dictGroup = reactive({
       })
       .then(() => {
         dictGroup.request()
-        proxy.$modal.msgSuccess('删除成功')
+        ElMessage.success('删除成功')
       })
   },
   handleExport: () => {
@@ -270,7 +270,7 @@ const dictGroup = reactive({
     loading.value = true
     refreshCache()
       .then(() => {
-        proxy.$modal.msgSuccess('刷新成功')
+        ElMessage.success('刷新成功')
         useDictStore().cleanDict()
       })
       .finally(() => {
@@ -313,7 +313,7 @@ const dictData = reactive({
       })
       .then(() => {
         dictData.request()
-        proxy.$modal.msgSuccess('删除成功')
+        ElMessage.success('删除成功')
         useDictStore().removeDict(dictData.query.dictType)
       })
   },

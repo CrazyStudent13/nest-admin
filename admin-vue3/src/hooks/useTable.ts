@@ -54,7 +54,7 @@ interface options {
  * @param {Object} options 配置项,配置下载文件名称和表格主键字段
  */
 
-const useTable = (api: apiParams, searchParam, formRef: any, options: options) => {
+const useTable = (api: apiParams, searchParam: any, formRef: any, options: options) => {
   const state = reactive<TableState>({
     loading: false,
     list: [],

@@ -47,7 +47,7 @@ interface options {
 }
 
 /**
- * @description table操作方法封装
+ * @description table操作方法封装，不过只是对通用的单表操作，不建议对特殊表单操作
  * @param {Function} api 表格列表数据接口
  * @param {Object} searchParam 表格查询参数
  * @param {Object} formRef 表单ref,用于处理清空form的校验结果等操作

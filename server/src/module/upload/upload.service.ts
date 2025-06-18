@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { ResultData } from 'src/common/utils/result';
 import { SysUploadEntity } from './entities/upload.entity';
 import { ChunkFileDto, ChunkMergeFileDto } from './dto/index';
-import { GenerateUUID } from 'src/common/utils/index';
+import { GenerateUUID, getStandardUrl } from 'src/common/utils/index';
 import fs from 'fs';
 import path from 'path';
 import iconv from 'iconv-lite';
@@ -239,9 +239,9 @@ export class UploadService {
     const fileName = path.join(this.config.get('app.file.serveRoot'), relativeFilePath);
     const url = path.join(this.config.get('app.file.domain'), fileName);
     return {
-      fileName: fileName,
+      fileName: getStandardUrl(fileName),
       newFileName: newFileName,
-      url: url,
+      url: getStandardUrl(url),
     };
   }
   /**

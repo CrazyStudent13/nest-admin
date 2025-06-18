@@ -57,6 +57,9 @@
           <el-tabs v-model="activeTab">
             <el-tab-pane label="基本资料" name="userinfo">
               <userInfo :user="state.user" />
+              <pre>
+                {{ state.user }}
+              </pre>
             </el-tab-pane>
             <el-tab-pane label="修改密码" name="resetPwd">
               <resetPwd />
@@ -72,7 +75,8 @@
 import userAvatar from './userAvatar'
 import userInfo from './userInfo'
 import resetPwd from './resetPwd'
-import { getUserProfile } from '@/api/system/user'
+import { getUserProfile, updateUserProfile } from '@/api/system/user'
+import dayjs from 'dayjs'
 
 const activeTab = ref('userinfo')
 const state = reactive({
@@ -97,6 +101,8 @@ function getUser() {
 
 function updateAvatar(url) {
   state.user.avatar = url
+
+  updateUserProfile(state.user)
 }
 
 getUser()

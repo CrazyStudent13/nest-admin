@@ -196,3 +196,15 @@ export function mergeDeep(target, ...sources) {
 
   return mergeDeep(target, ...sources);
 }
+
+/**
+ * @description: 获取标准Url，主要处理文件访问路径
+ * @param {string} url
+ */
+export function getStandardUrl(url: string): string {
+  if (url.includes('http:') || url.includes('https:')) {
+    return url.replace(/\\/g, '/').replace('http:/', 'http://');
+  } else {
+    return url.replace(/\\/g, '/');
+  }
+}

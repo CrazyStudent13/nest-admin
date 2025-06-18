@@ -25,7 +25,7 @@
       <div class="avatar-container">
         <el-dropdown @command="handleCommand" class="right-menu-item hover-effect" trigger="click">
           <div class="avatar-wrapper">
-            <img :src="userStore.avatar" class="user-avatar" />
+            <img :src="avatar" class="user-avatar" />
             <el-icon><caret-bottom /></el-icon>
           </div>
           <template #dropdown>
@@ -69,16 +69,27 @@ function toggleSideBar() {
   appStore.toggleSideBar()
 }
 
+// 头像的获取
+const avatar = computed(() => {
+  if (userStore.avatar === '') {
+    return require('@/assets/images/avatar.png')
+  } else if (userStore.avatar.indexOf('http') === 0) {
+    return userStore.avatar
+  } else {
+    return import.meta.env.VITE_APP_BASE_API + userStore.avatar
+  }
+})
+
 function handleCommand(command) {
   switch (command) {
-    case "setLayout":
-      setLayout();
-      break;
-    case "logout":
-      logout();
-      break;
+    case 'setLayout':
+      setLayout()
+      break
+    case 'logout':
+      logout()
+      break
     default:
-      break;
+      break
   }
 }
 
@@ -87,20 +98,22 @@ function logout() {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    userStore.logOut().then(() => {
-      location.href = '/index';
+  })
+    .then(() => {
+      userStore.logOut().then(() => {
+        location.href = '/index'
+      })
     })
-  }).catch(() => { });
+    .catch(() => {})
 }
 
 const emits = defineEmits(['setLayout'])
 function setLayout() {
-  emits('setLayout');
+  emits('setLayout')
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .navbar {
   height: 50px;
   overflow: hidden;

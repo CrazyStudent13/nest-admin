@@ -80,7 +80,7 @@ const avatar = computed(() => {
 
 //图片裁剪数据
 const options = reactive({
-  img: userStore.avatar, // 裁剪图片的地址
+  img: '', // 裁剪图片的地址
   autoCrop: true, // 是否默认生成截图框
   autoCropWidth: 200, // 默认生成截图框宽度
   autoCropHeight: 200, // 默认生成截图框高度
@@ -89,9 +89,29 @@ const options = reactive({
   previews: {} //预览数据
 })
 
+// 图片转为base64格式
+const ToBase64 = (imgUrl) => {
+  // 一定要设置为let，不然图片不显示
+  let image = new Image()
+  // 解决跨域问题
+  image.setAttribute('crossOrigin', 'anonymous)')
+  image.src = `${imgUrl}?time=${new Date().valueOf()}` // src 加上时间戳
+  image.onload = () => {
+    let canvas = document.createElement('canvas')
+    canvas.width = image.width
+    canvas.height = image.height
+    let context = canvas.getContext('2d')
+    context.drawImage(image, 0, 0, image.width, image.height)
+    let quality = 0.8
+    options.img = canvas.toDataURL('image/jpeg', quality)
+    console.log(options.img)
+  }
+}
+
 /** 编辑头像 */
 function editCropper() {
   open.value = true
+  ToBase64(avatar.value)
 }
 /** 打开弹出层结束时的回调 */
 function modalOpened() {

@@ -48,7 +48,7 @@
         </el-card>
       </el-col>
       <el-col :span="18" :xs="24">
-        <el-card>
+        <el-card class="box-card">
           <template v-slot:header>
             <div class="clearfix">
               <span>基本资料</span>
@@ -57,9 +57,6 @@
           <el-tabs v-model="activeTab">
             <el-tab-pane label="基本资料" name="userinfo">
               <userInfo :user="state.user" />
-              <pre>
-                {{ state.user }}
-              </pre>
             </el-tab-pane>
             <el-tab-pane label="修改密码" name="resetPwd">
               <resetPwd />
@@ -107,3 +104,9 @@ function updateAvatar(url) {
 
 getUser()
 </script>
+
+<style lang="scss" scoped>
+.box-card {
+  min-height: 80vh;
+}
+</style>

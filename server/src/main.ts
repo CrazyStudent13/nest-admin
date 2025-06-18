@@ -28,6 +28,8 @@ async function bootstrap() {
 
   const rootPath = process.cwd();
   const baseDirPath = join(rootPath, config.get('app.file.location'));
+  // 允许跨域
+  app.enableCors();
   app.useStaticAssets(baseDirPath, {
     prefix: '/profile/',
     maxAge: 86400000 * 365,

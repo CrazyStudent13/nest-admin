@@ -1,8 +1,8 @@
 <template>
   <div class="user-info-head" @click="editCropper()">
     <img :src="avatar" title="点击上传头像" class="img-circle img-lg" />
-    <el-dialog :title="title" v-model="open" width="800px" append-to-body @opened="modalOpened" @close="closeDialog">
-      <el-row>
+    <el-dialog v-model="open" :title="title" width="800px" append-to-body @opened="modalOpened" @close="closeDialog">
+      <el-row v-loading="options.loading">
         <el-col :xs="24" :md="12" :style="{ height: '350px' }">
           <vue-cropper
             ref="cropper"
@@ -46,7 +46,7 @@
           <el-button icon="RefreshRight" @click="rotateRight()"></el-button>
         </el-col>
         <el-col :lg="{ span: 2, offset: 6 }" :md="2">
-          <el-button type="primary" @click="uploadImg()">提 交</el-button>
+          <el-button :loading="options.loading" type="primary" @click="uploadImg()">提 交</el-button>
         </el-col>
       </el-row>
     </el-dialog>
@@ -72,9 +72,10 @@ const avatar = computed(() => {
   if (userStore.avatar === '') {
     return require('@/assets/images/avatar.png')
   } else if (userStore.avatar.indexOf('http') === 0) {
-    return userStore.avatar
+    return userStore.avatar.replace(/\\/g, '/').replace('http:/', 'http://')
   } else {
-    return import.meta.env.VITE_APP_BASE_API + userStore.avatar
+    const url = import.meta.env.VITE_APP_BASE_API + userStore.avatar
+    return url.replace(/\\/g, '/').replace('http:/', 'http://')
   }
 })
 
@@ -86,7 +87,8 @@ const options = reactive({
   autoCropHeight: 200, // 默认生成截图框高度
   fixedBox: true, // 固定截图框大小 不允许改变
   outputType: 'png', // 默认生成截图为PNG格式
-  previews: {} //预览数据
+  previews: {}, //预览数据
+  loading: false // loading
 })
 
 // 图片转为base64格式
@@ -96,6 +98,7 @@ const ToBase64 = (imgUrl) => {
   // 解决跨域问题
   image.setAttribute('crossOrigin', 'anonymous)')
   image.src = `${imgUrl}?time=${new Date().valueOf()}` // src 加上时间戳
+  options.loading = true
   image.onload = () => {
     let canvas = document.createElement('canvas')
     canvas.width = image.width
@@ -104,7 +107,7 @@ const ToBase64 = (imgUrl) => {
     context.drawImage(image, 0, 0, image.width, image.height)
     let quality = 0.8
     options.img = canvas.toDataURL('image/jpeg', quality)
-    console.log(options.img)
+    options.loading = false
   }
 }
 
@@ -134,6 +137,7 @@ function changeScale(num) {
 }
 /** 上传预处理 */
 function beforeUpload(file) {
+  // 判断文件格式
   if (file.type.indexOf('image/') == -1) {
     proxy.$modal.msgError('文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。')
   } else {
@@ -149,8 +153,10 @@ function uploadImg() {
   proxy.$refs.cropper.getCropBlob((data) => {
     let formData = new FormData()
     formData.append('avatarfile', data)
+    options.loading = true
     uploadAvatar(formData).then((response) => {
       open.value = false
+      options.loading = false
       options.img = response.data.filePath
       userStore.avatar = options.img
       emit('updateAvatar', response.data.filePath)

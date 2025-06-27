@@ -133,7 +133,7 @@ const rules = {
   noticeType: [{ required: true, message: '请选择公告类型', trigger: 'change' }]
 }
 const defaultForm = { noticeTitle: '', noticeType: '', status: '0', noticeContent: '' }
-const noticeForm = useForm({ add: addNotice, update: updateNotice, delete: delNotice, get: getNotice }, noticeFormRef, modules, defaultForm)
+const noticeForm = useForm({ add: addNotice, update: updateNotice, get: getNotice }, noticeFormRef, modules, defaultForm)
 
 // 新增操作
 const handleAdd = () => {

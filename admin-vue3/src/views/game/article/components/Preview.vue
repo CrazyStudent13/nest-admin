@@ -3,7 +3,7 @@
     <template #title>
       <div class="drawer-title">
         <h3>{{ drawer.title }}</h3>
-        <el-button type="primary" size="mini" @click="handleUpdate">修改</el-button>
+        <el-button type="primary" size="mini" @click="handleUpdate">编辑</el-button>
       </div>
     </template>
     <el-tabs v-model="drawer.activeName" style="margin-top: 0px" @tab-click="handleClick">
@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import dayjs from 'dayjs'
 import { getArticle } from '@/api/game/article'
 import MdViewer from '@/components/MdViewer'
 const router = useRouter()
@@ -40,7 +41,7 @@ const form = reactive({
 
 const handleUpdate = () => {
   router.push({
-    path: '/game/article/edit',
+    path: '/write',
     query: { articleId: form.model.articleId }
   })
 }

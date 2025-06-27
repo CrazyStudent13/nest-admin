@@ -6,7 +6,23 @@ interface apiParams {
   add: Function
   edit: Function
 }
-const useWrtie = (api: apiParams, searchParam, formRef: any) => {
+
+/**
+ * options 配置项
+ * @param key 文章主键
+ */
+interface options {
+  key: string
+}
+
+/**
+ * @description: 封装了查询，增、改的逻辑
+ * @param {apiParams} api 接口
+ * @param {any} searchParam 查询参数
+ * @param {options} options 配置项
+ * @return {*}
+ */
+const useWrtie = (api: apiParams, searchParam, options: options = { key: 'id' }) => {
   const state = reactive({
     title: '',
     loading: false,
@@ -32,6 +48,12 @@ const useWrtie = (api: apiParams, searchParam, formRef: any) => {
     }
 
     state.loading = false
+  }
+
+  return {
+    state,
+    request,
+    onSubmit
   }
 }
 

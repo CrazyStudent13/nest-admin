@@ -16,6 +16,7 @@ interface page {
 /**
  * api参数
  * @param get 获取列表数据
+ * @param del 删除接口
  * @param export 导出接口
  */
 interface apiParams {

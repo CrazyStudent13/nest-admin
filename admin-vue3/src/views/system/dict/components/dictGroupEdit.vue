@@ -1,7 +1,7 @@
 <template>
   <!-- 添加或修改数据字典项配置 -->
   <el-dialog :title="form.title" v-model="dialogTableVisible" width="600px" append-to-body>
-    <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="100px">
+    <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="120px">
       <el-form-item label="字典名称" prop="dictName">
         <el-input v-model="form.model.dictName" placeholder="请输入字典名称" />
       </el-form-item>
@@ -52,6 +52,7 @@ const form = reactive({
   },
   reset: () => {
     form.loading = false
+    form.model = Object.assign({}, form.model)
     nextTick(() => {
       proxy.resetForm('formRef')
     })
@@ -62,14 +63,14 @@ const form = reactive({
         form.loading = true
         if (form.model.dictId != undefined) {
           updateType(form.model).then(() => {
-            proxy.$modal.msgSuccess('修改成功')
+            ElMessage.success('修改成功')
             form.reset()
             dialogTableVisible.value = false
             emit('refresh')
           })
         } else {
           addType(form.model).then(() => {
-            proxy.$modal.msgSuccess('新增成功')
+            ElMessage.success('新增成功')
             form.reset()
             dialogTableVisible.value = false
             emit('refresh')

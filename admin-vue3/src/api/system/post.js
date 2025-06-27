@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { download } from '@/utils/request'
 
 // 查询岗位列表
 export function listPost(query) {
@@ -41,4 +42,10 @@ export function delPost(postId) {
     url: '/system/post/' + postId,
     method: 'delete'
   })
+}
+
+// 导出参数配置
+export function exportPost(query, options) {
+  const fileName = `${options.name}_${new Date().getTime()}.xlsx`
+  return download('system/post/export', { ...query }, fileName)
 }

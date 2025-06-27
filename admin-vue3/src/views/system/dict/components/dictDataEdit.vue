@@ -1,7 +1,7 @@
 <template>
   <!-- 添加或修改数据字典内容配置 -->
   <el-dialog :title="form.title" v-model="dialogTableVisible" width="600px" append-to-body>
-    <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="100px">
+    <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="120px">
       <el-form-item label="字典类型">
         <el-input v-model="form.model.dictType" :disabled="true" />
       </el-form-item>
@@ -23,7 +23,7 @@
         <template #label>
           <el-tooltip effect="dark" :content="tips" placement="top-start">
             <div class="tips">
-              <QuestionFilled class="tips-icon" :size="'14px'"/>
+              <QuestionFilled class="tips-icon" :size="'14px'" />
             </div>
           </el-tooltip>
           <span style="width: 80px">样式属性</span>
@@ -99,14 +99,14 @@ const form = reactive({
         form.loading = true
         if (form.model.dictCode != undefined) {
           updateData(form.model).then(() => {
-            proxy.$modal.msgSuccess('修改成功')
+            ElMessage.success('修改成功')
             form.reset()
             dialogTableVisible.value = false
             emit('refresh')
           })
         } else {
           addData(form.model).then(() => {
-            proxy.$modal.msgSuccess('新增成功')
+            ElMessage.success('新增成功')
             form.reset()
             dialogTableVisible.value = false
             emit('refresh')

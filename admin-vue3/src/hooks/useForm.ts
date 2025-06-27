@@ -9,56 +9,52 @@ interface FormState {
 }
 
 /**
- * api参数
- * @param get 获取单条数据
- * @param add 新增数据
- * @param delete 删除数据
- * @param update 修改数据
+ * options参数
+ * @param {String} tableKey 表格主键字段
+ * @param {String} name 模块名称
  */
-interface apiParams {
-  get?: (id: number | string) => Promise<any>
-  add?: (params: any) => Promise<any>
-  delete?: (id: number | string) => Promise<any>
-  update?: (params: any) => Promise<any>
+interface options {
+  tableKey: string
+  name: string
 }
 
 /**
- * 针对弹窗表单进行封装的hooks，附带了表单弹窗的打开和修改
+ * api参数
+ * @param get 获取单条数据
+ * @param add 新增数据
+ * @param update 修改数据
+ */
+interface apiParams {
+  get: (id: number | string) => Promise<any>
+  add: (params: any) => Promise<any>
+  update: (params: any) => Promise<any>
+}
+
+/**
+ * @description 针对弹窗表单进行封装的hooks，附带了表单弹窗的打开和修改, 不过目前只能针对单表的需求操作
  * @param api 请求的api,将新增修改删除传入
  * @param formRef 表单的ref
  * @param key 表单的key，id关键字，用来获取，修改表单数据
+ * @param defaultForm 默认的表单数据
  */
-const useForm = (api: apiParams, formRef: any, key: string) => {
+const useForm = (api: apiParams, formRef: any, options: options = { tableKey: 'id', name: '' }, defaultForm: any = {}) => {
   const state = reactive<FormState>({
     loading: false, // 表单加载状态
     open: false, // 弹窗是否打开
     title: '', // 弹窗标题
-    form: {} // 表单数据
+    form: Object.assign({}, defaultForm) // 表单数据
   })
 
   // 重置表单
   const onReset = () => {
     formRef.value.resetFields()
-    state.form = {}
+    state.form = Object.assign({}, defaultForm)
   }
 
   // 关闭弹窗
   const onCancel = () => {
     formRef.value.resetFields()
     state.open = false
-  }
-
-  // 删除单行或多行数据
-  const onRowDelete = async (ids: string | number) => {
-    state.loading = true
-    try {
-      await api.delete(ids)
-      ElMessage.success('删除成功')
-    } catch (error) {
-      ElMessage.error('删除失败')
-    } finally {
-      state.loading = false
-    }
   }
 
   // 打开表单，新增或修改表单
@@ -68,9 +64,10 @@ const useForm = (api: apiParams, formRef: any, key: string) => {
     // 判断是修改还是添加操作
     if (row) {
       try {
-        const formId = row[key]
+        const formId = row[options.tableKey]
 
         state.title = formId ? '修改' : '添加'
+        state.title += options.name
         const res = await api.get(formId) // 这里后续要补充一个类型
         state.form = res.data
       } catch (error) {
@@ -79,8 +76,8 @@ const useForm = (api: apiParams, formRef: any, key: string) => {
         state.loading = false
       }
     } else {
-      state.form = {}
-      state.title = '添加'
+      state.title = '添加' + options.name
+      state.form = Object.assign({}, defaultForm)
       nextTick(() => {
         state.loading = false
         formRef.value.resetFields()
@@ -91,18 +88,19 @@ const useForm = (api: apiParams, formRef: any, key: string) => {
   // 提交表单，新增或修改表单数据
   const onSubmit = async () => {
     const form = state.form
-    const formId = form[key]
+    const formId = form[options.tableKey]
 
     state.loading = true
 
     try {
       const operate = formId ? '修改' : '新增'
+      const title = `${operate}${options.name}`
       if (formId) {
         await api.update(form)
       } else {
         await api.add(form)
       }
-      ElMessage.success(`${operate}成功`)
+      ElMessage.success(`${title}成功`)
     } catch (error) {
       ElMessage.error('修改失败')
     } finally {
@@ -116,8 +114,7 @@ const useForm = (api: apiParams, formRef: any, key: string) => {
     onReset,
     onCancel,
     onOpenForm,
-    onSubmit,
-    onRowDelete
+    onSubmit
   }
 }
 

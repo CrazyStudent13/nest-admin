@@ -3,7 +3,9 @@
     <template #title>
       <div class="drawer-title">
         <h3>{{ drawer.title }}</h3>
-        <el-button type="primary" size="small" @click="handleUpdate">编辑</el-button>
+        <div style="margin-left: 15px">
+          <el-button type="primary" size="small" @click="handleUpdate">编辑</el-button>
+        </div>
       </div>
     </template>
     <el-tabs v-model="drawer.activeName" style="margin-top: 0px" @tab-click="handleClick">

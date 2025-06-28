@@ -4,8 +4,8 @@
       <input v-model="article.model.title" @input="handleTitleInput" placeholder="请输入标题..." />
     </div>
     <div class="write-header-actions write-header-item">
-      <el-button type="primary" @click="article.handleSave">发布</el-button>
       <el-button type="info" @click="article.handleCancel">取消</el-button>
+      <el-button type="primary" @click="article.handleSave">发布</el-button>
     </div>
   </div>
 
@@ -13,7 +13,7 @@
     <MdEditor v-model="article.model.content" height="100vh" @save="article.handleSave" />
   </div>
 
-  <gameArticleEdit ref="gameArticleEditRef" v-model:model="article.model" />
+  <gameArticleEdit ref="gameArticleEditRef" v-model:model="article.model" @success="article.handleSubmitSuccess" />
 </template>
 
 <script setup>
@@ -58,6 +58,21 @@ const article = reactive({
         gameArticleEditRef.value.handleUpdate(form)
         break
     }
+  },
+  handleSubmitSuccess: () => {
+    setTimeout(() => {
+      ElMessageBox.confirm('您已完成发布，要关闭当前页面吗？', '系统提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          window.close()
+        })
+        .catch(() => {
+          console.log('取消关闭')
+        })
+    }, 2000)
   }
 })
 

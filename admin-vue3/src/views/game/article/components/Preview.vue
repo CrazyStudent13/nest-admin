@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawer.visible" size="1000px" direction="rtl">
+  <el-drawer v-model="drawer.visible" size="1000px" direction="rtl" @close="handleClose">
     <template #title>
       <div class="drawer-title">
         <h3>{{ drawer.title }}</h3>
@@ -65,7 +65,10 @@ const handleOpen = (row) => {
     drawer.visible = true
   })
 }
+
+const emit = defineEmits(['close'])
 const handleClose = () => {
+  emit('close')
   drawer.visible = false
 }
 

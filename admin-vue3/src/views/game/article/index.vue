@@ -57,7 +57,7 @@
     />
 
     <editView ref="editViewRef" @success="handleEditSuccess" />
-    <Preview ref="PreviewRef" />
+    <Preview ref="PreviewRef" @close="gameArticleTable.request" />
   </div>
 </template>
 
@@ -114,13 +114,13 @@ const handleSelectionChange = (selection) => {
 
 // 删除操作
 const handleDelete = (row) => {
-  const ids = row[modules.tableKey] || ids.value
+  const articleIds = row[modules.tableKey] || ids.value
   ElMessageBox.confirm('您确认要删除该数据吗？', '删除提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    gameArticleTable.onDelete(ids)
+    gameArticleTable.onDelete(articleIds)
   })
 }
 

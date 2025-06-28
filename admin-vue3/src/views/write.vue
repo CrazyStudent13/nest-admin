@@ -47,6 +47,8 @@ const article = reactive({
         article.model.content = useWriteGame.state.content
         break
     }
+
+    window.document.title = `编辑 - ${article.model.title}`
   },
   handleCancel: () => {
     useWriteGame.onCancel()

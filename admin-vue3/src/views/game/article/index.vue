@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" @submit.prevent>
       <el-form-item label="文章标题" prop="title">
-        <el-input v-model="queryParams.title" placeholder="请输入文章标题" clearable style="width: 200px" @keyup.up="gameArticleTable.onSearch" />
+        <el-input v-model="queryParams.title" placeholder="请输入文章标题" clearable @keyup.enter="gameArticleTable.onSearch" />
       </el-form-item>
       <!-- todo: 状态字典翻译,数据字典有问题，目前的数据字典改完数据之后，前端的数据字典没有及时修改数据键值 -->
       <!-- <el-form-item label="状态" prop="status">

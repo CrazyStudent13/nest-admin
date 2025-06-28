@@ -36,7 +36,7 @@
           <!-- <dict-tag :options="sys_article_status" :value="scope.row.status" /> -->
         </template>
       </el-table-column>
-      <el-table-column label="发布时间" align="center" prop="publishTime" width="180" />
+      <!-- <el-table-column label="发布时间" align="center" prop="publishTime" width="180" /> -->
       <el-table-column label="创建时间" align="center" prop="createTime" width="180" />
       <el-table-column label="修改时间" align="center" prop="updateTime" width="180" />
       <el-table-column label="操作" width="240" align="center" fixed="right" class-name="small-padding fixed-width">

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { ResultData } from 'src/common/utils/result';
 import { gameAricleEntity } from './entities/article.entity';
 import { CreateGameAricleDto, UpdateGameAricleDto, ListGameAricleDto } from './dto/index';
@@ -76,9 +76,9 @@ export class GameArticleService {
     return ResultData.ok('修改成功');
   }
 
-  async remove(articleId: number) {
+  async remove(articleIds: number[]) {
     const data = await this.gameAricleEntityRep.update(
-      { articleId: articleId },
+      { articleId: In(articleIds) },
       {
         delFlag: '1',
       },

@@ -78,7 +78,8 @@ export class GameArticleController {
   })
   @RequirePermission('system:Game:remove')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.GameArticleService.remove(+id);
+  remove(@Param('id') ids: string) {
+    const articleIds = ids.split(',').map((id) => +id);
+    return this.GameArticleService.remove(articleIds);
   }
 }

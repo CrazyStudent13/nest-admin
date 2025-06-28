@@ -1,11 +1,9 @@
 <template>
-  <el-drawer v-model="drawer.visible" size="1000px" direction="rtl" @close="handleClose">
+  <el-drawer v-model="drawer.visible" :header-class="'drawer-title'" size="1000px" direction="rtl" @close="handleClose">
     <template #title>
-      <div class="drawer-title">
-        <h3>{{ drawer.title }}</h3>
-        <div style="margin-left: 15px">
-          <el-button type="primary" size="small" @click="handleUpdate">编辑</el-button>
-        </div>
+      <h3>{{ drawer.title }}</h3>
+      <div style="margin: 0 24px">
+        <el-button type="primary" @click="handleUpdate">编辑</el-button>
       </div>
     </template>
     <el-tabs v-model="drawer.activeName" style="margin-top: 0px" @tab-click="handleClick">
@@ -81,8 +79,9 @@ defineExpose({
 <style lang="scss" scoped>
 .drawer-title {
   display: flex;
+  justify-content: center;
   align-items: center;
-  margin-right: 20px;
+  margin: 0 20px 20px 0;
   font-weight: bold;
 }
 

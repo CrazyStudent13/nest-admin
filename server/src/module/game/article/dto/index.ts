@@ -38,10 +38,16 @@ export class CreateGameAricleDto {
 
 export class UpdateGameAricleDto extends CreateGameAricleDto {
   @ApiProperty({
-    required: false,
+    required: true,
   })
   @IsNumber()
   articleId: number;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  content: string;
 }
 
 export class ListGameAricleDto extends PagingDto {

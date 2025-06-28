@@ -8,9 +8,10 @@
       <el-form-item label="文章简介" prop="remark">
         <el-input v-model="ArticleForm.state.form.remark" placeholder="请输入文章简介" type="textarea" :rows="5" maxlength="200" show-word-limit />
       </el-form-item>
-      <el-form-item label="发布时间" prop="publishTime">
+      <!-- todo：发布时间要放在后端，当用户提交表单时，后端将时间转换成时间戳保存到数据库中 -->
+      <!-- <el-form-item label="发布时间" prop="publishTime">
         <el-date-picker v-model="ArticleForm.state.form.publishTime" type="datetime" placeholder="请选择发布时间" format="YYYY/MM/DD HH:mm:ss" />
-      </el-form-item>
+      </el-form-item> -->
       <!-- todo: 文件上传公用组件的封装 -->
       <!-- <el-form-item label="文章封面" prop="remark">
           <el-input v-model="form.remark" placeholder="请输入编码名称" />

@@ -24,12 +24,6 @@ export class CreateGameAricleDto {
   @ApiProperty({
     required: true,
   })
-  @IsDateString()
-  publishTime: string;
-
-  @ApiProperty({
-    required: true,
-  })
   @IsOptional()
   @IsString()
   @IsEnum(StatusEnum)
@@ -42,6 +36,9 @@ export class UpdateGameAricleDto extends CreateGameAricleDto {
   })
   @IsNumber()
   articleId: number;
+
+  @IsDateString()
+  publishTime: string;
 
   @ApiProperty({
     required: true,

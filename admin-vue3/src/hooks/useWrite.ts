@@ -1,10 +1,18 @@
-import { nextTick, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { nextTick, reactive, unref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 interface apiParams {
   get: Function
   add: Function
   edit: Function
+}
+
+/**
+ * 查询参数
+ * @param {Number} id 文章id
+ */
+interface searchParam {
+  id: number
 }
 
 /**
@@ -15,45 +23,72 @@ interface options {
   key: string
 }
 
-/**
- * @description: 封装了查询，增、改的逻辑
- * @param {apiParams} api 接口
- * @param {any} searchParam 查询参数
- * @param {options} options 配置项
- * @return {*}
- */
-const useWrtie = (api: apiParams, searchParam, options: options = { key: 'id' }) => {
-  const state = reactive({
-    title: '',
+interface State {
+  loading: boolean
+  title: string
+  content: string
+}
+
+// 格式化回显数据
+function formatData(data: any) {
+  return {
+    title: data?.title,
+    content: data.content ? data?.content.slice(1, -1).replace(/\\n/g, '\n') : ''
+  }
+}
+
+const useWrtie = (api: apiParams, searchParam: searchParam, options: options = { key: 'id' }) => {
+  const state = reactive<State>({
     loading: false,
+    title: '',
     content: ''
   })
 
   const request = async () => {
     state.loading = true
-    const res = await api.get(searchParam)
-    state.content = res.data
-    nextTick(() => {
-      state.loading = false
-    })
+    try {
+      // console.log('表单详情获取开始', api)
+      const { code, data, msg } = await api.get(searchParam.id)
+      if (data && code === 200) {
+        Object.assign(state, data, formatData(data))
+      } else {
+        ElMessage.error(msg)
+      }
+    } catch (error) {
+      console.log('表单详情获取失败：', error)
+    } finally {
+      nextTick(() => {
+        state.loading = false
+      })
+    }
+  }
+  // 提交之前格式化数据，为修改做数据准备
+  const onSubmit = (row) => {
+    const form = formatData(row)
+
+    console.log('提交数据：', Object.assign(state, form))
+    return Object.assign(state, form)
   }
 
-  const onSubmit = async () => {
-    state.loading = true
-    try {
-      await api.add(state.content)
-      ElMessage.success('添加成功')
-    } catch (error) {
-      ElMessage.error('添加失败')
-    }
-
-    state.loading = false
+  const onCancel = () => {
+    ElMessageBox.confirm('您确定要取消保存吗？不保存将会失去当前所有修改并无法恢复，您真的确定要这么做吗？', '系统提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+      .then(() => {
+        window.close()
+      })
+      .catch(() => {
+        console.log('取消')
+      })
   }
 
   return {
     state,
     request,
-    onSubmit
+    onSubmit,
+    onCancel
   }
 }
 

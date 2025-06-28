@@ -66,10 +66,13 @@ const useForm = (api: apiParams, formRef: any, options: options = { tableKey: 'i
       try {
         const formId = row[options.tableKey]
 
+        console.log('表单详情获取开始', row)
+
         state.title = formId ? '修改' : '添加'
         state.title += options.name
         const res = await api.get(formId) // 这里后续要补充一个类型
-        state.form = res.data
+
+        state.form = Object.assign(res.data, row)
       } catch (error) {
         console.log('表单详情获取失败：', error)
       } finally {

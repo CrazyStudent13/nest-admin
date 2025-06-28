@@ -3,7 +3,7 @@
     <template #title>
       <div class="drawer-title">
         <h3>{{ drawer.title }}</h3>
-        <el-button type="primary" size="mini" @click="handleUpdate">编辑</el-button>
+        <el-button type="primary" size="small" @click="handleUpdate">编辑</el-button>
       </div>
     </template>
     <el-tabs v-model="drawer.activeName" style="margin-top: 0px" @tab-click="handleClick">
@@ -40,17 +40,22 @@ const form = reactive({
 })
 
 const handleUpdate = () => {
-  router.push({
+  const routeData = router.resolve({
     path: '/write',
-    query: { articleId: form.model.articleId }
+    query: {
+      id: form.model.articleId,
+      action: 'gameArticle'
+    }
   })
+
+  window.open(routeData.href, '_blank')
 }
 
 const handleOpen = (row) => {
   const articleId = row.articleId || ids.value
   getArticle(articleId).then((res) => {
     form.model = res.data
-    drawer.title = `文章-${form.model.title}`
+    drawer.title = `${form.model.title}`
 
     form.model.updateTime = dayjs(form.model.updateTime).format('YYYY-MM-DD HH:mm:ss')
     form.model.createTime = dayjs(form.model.createTime).format('YYYY-MM-DD HH:mm:ss')

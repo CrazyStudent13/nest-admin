@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawer.visible" size="800px" direction="rtl">
+  <el-drawer v-model="drawer.visible" size="1000px" direction="rtl">
     <template #title>
       <div class="drawer-title">
         <h3>{{ drawer.title }}</h3>

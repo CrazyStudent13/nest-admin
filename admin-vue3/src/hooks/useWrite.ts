@@ -33,7 +33,7 @@ interface State {
 function formatData(data: any) {
   return {
     title: data?.title,
-    content: data.content ? data?.content.slice(1, -1).replace(/\\n/g, '\n') : ''
+    content: data.content ? data?.content : ''
   }
 }
 

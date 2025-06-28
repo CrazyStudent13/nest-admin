@@ -1,9 +1,15 @@
 <!-- todo 待完善，等后续组件太多的时候，进行统一的整合 -->
+<!-- 参考文档：https://code-farmer-i.github.io/vue-markdown-editor/zh/examples/base-editor.html -->
 <template>
-  <v-md-editor v-model="text" @save="handleSave" />
+  <v-md-editor v-model="text" :previewTheme="state.theme" @save="handleSave" />
 </template>
 
 <script setup>
+const state = reactive({
+  text: '',
+  theme: 'github'
+})
+
 const text = ref('')
 
 const props = defineProps({
@@ -12,15 +18,6 @@ const props = defineProps({
     default: ''
   }
 })
-
-// watch(
-//   () => props.value,
-//   (val, oldVal) => {
-//     // text.value = val.slice(1, -1).replace(/\\n/g, '\n')
-//     console.log(val, '测试>>>')
-//   },
-//   { immediate: true }
-// )
 
 const handleSave = () => {
   console.log(props.value)

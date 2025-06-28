@@ -16,21 +16,6 @@ import draggable from 'dd-form-draggable'
 import VFormDesigner from '@/assets/draggable/dist/designer.es'
 import '@/assets/draggable/dist/designer.style.css'
 
-// 挂载MD编辑器
-import VMdEditor from '@kangc/v-md-editor'
-import '@kangc/v-md-editor/lib/style/base-editor.css'
-import vuepressTheme from '@kangc/v-md-editor/lib/theme/vuepress.js'
-import '@kangc/v-md-editor/lib/theme/style/vuepress.css'
-
-// Prism
-import Prism from 'prismjs'
-// highlight code
-import 'prismjs/components/prism-json'
-
-VMdEditor.use(vuepressTheme, {
-  Prism
-})
-
 // 注册指令
 import plugins from './plugins' // plugins
 import { download } from '@/utils/request'
@@ -64,6 +49,8 @@ import TreeSelect from '@/components/TreeSelect'
 // 字典标签组件
 import DictTag from '@/components/DictTag'
 
+import { VMdEditor, VMdPreview } from '@/plugins/markdown'
+
 const app = createApp(App)
 
 // 全局方法挂载
@@ -87,6 +74,7 @@ app.component('RightToolbar', RightToolbar)
 app.component('Editor', Editor)
 app.component('draggable', draggable)
 app.component('VMdEditor', VMdEditor)
+app.component('VMdPreview', VMdPreview)
 
 app.use(router)
 app.use(store)

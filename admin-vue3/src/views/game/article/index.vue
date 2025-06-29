@@ -30,12 +30,14 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="文章标题" align="left" prop="title" show-overflow-tooltip />
       <el-table-column label="文章简介" align="center" prop="remark" show-overflow-tooltip />
+
       <!-- <el-table-column label="文章作者" align="center" prop="author" /> -->
       <el-table-column v-if="false" label="状态" align="center" prop="status">
         <template #default="scope">
           <!-- <dict-tag :options="sys_article_status" :value="scope.row.status" /> -->
         </template>
       </el-table-column>
+      <!-- todo：发布时间暂时隐藏，等后续完善再完善一下 -->
       <!-- <el-table-column label="发布时间" align="center" prop="publishTime" width="180" /> -->
       <el-table-column label="创建时间" align="center" prop="createTime" width="180" />
       <el-table-column label="修改时间" align="center" prop="updateTime" width="180" />

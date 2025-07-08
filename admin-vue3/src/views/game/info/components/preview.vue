@@ -72,8 +72,6 @@
 </template>
 
 <script setup>
-import { ref, defineExpose } from 'vue';
-
 const form = ref({
   gameId: null,
   nameZh: '',
@@ -85,14 +83,14 @@ const form = ref({
   gameStudio: '',
   createTime: '',
   updateTime: ''
-});
+})
 
-const dialogVisible = ref(false);
-const dialogTitle = ref('');
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
 
 // 使用数据字典
-const { proxy } = getCurrentInstance();
-const { game_types } = proxy.useDict('game_type');
+const { proxy } = getCurrentInstance()
+const { game_types } = proxy.useDict('game_type')
 
 // 打开预览对话框
 const handleOpen = (row) => {
@@ -100,15 +98,15 @@ const handleOpen = (row) => {
     ...row,
     createTime: row.createTime ? row.createTime : '',
     updateTime: row.updateTime ? row.updateTime : ''
-  };
-  dialogTitle.value = `游戏信息详情 - ${row.nameZh}`;
-  dialogVisible.value = true;
-};
+  }
+  dialogTitle.value = `游戏信息详情 - ${row.nameZh}`
+  dialogVisible.value = true
+}
 
 // 暴露方法给父组件调用
 defineExpose({
   handleOpen
-});
+})
 </script>
 
 <style scoped></style>

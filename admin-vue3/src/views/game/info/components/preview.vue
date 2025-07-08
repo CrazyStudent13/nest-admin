@@ -1,13 +1,16 @@
 <template>
-  <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" append-to-body>
+  <el-drawer v-model="drawer.visible" :title="dialogTitle" size="600px" direction="rtl">
     <el-form label-width="120px">
       <el-row>
-        <el-col :span="12">
+        <el-col :span="24">
           <el-form-item label="游戏中文名">
             <el-input v-model="form.nameZh" disabled />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+      </el-row>
+
+      <el-row>
+        <el-col :span="24">
           <el-form-item label="游戏英文名">
             <el-input v-model="form.nameEn" disabled />
           </el-form-item>
@@ -15,14 +18,17 @@
       </el-row>
 
       <el-row>
-        <el-col :span="12">
+        <el-col :span="24">
           <el-form-item label="游戏类型">
             <el-select v-model="form.gameType" disabled style="width: 100%">
               <el-option v-for="dict in game_types" :key="dict.value" :label="dict.label" :value="dict.value" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+      </el-row>
+
+      <el-row>
+        <el-col :span="24">
           <el-form-item label="当前版本">
             <el-input v-model="form.version" disabled />
           </el-form-item>
@@ -30,12 +36,15 @@
       </el-row>
 
       <el-row>
-        <el-col :span="12">
+        <el-col :span="24">
           <el-form-item label="最近价格">
             <el-input-number v-model="form.price" disabled style="width: 100%" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+      </el-row>
+
+      <el-row>
+        <el-col :span="24">
           <el-form-item label="开发商">
             <el-input v-model="form.gameStudio" disabled />
           </el-form-item>
@@ -63,12 +72,7 @@
         </el-col>
       </el-row>
     </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">关 闭</el-button>
-      </div>
-    </template>
-  </el-dialog>
+  </el-drawer>
 </template>
 
 <script setup>
@@ -85,8 +89,10 @@ const form = ref({
   updateTime: ''
 })
 
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
+const drawer = ref({
+  visible: false,
+  title: '游戏信息详情'
+})
 
 // 使用数据字典
 const { proxy } = getCurrentInstance()
@@ -99,14 +105,28 @@ const handleOpen = (row) => {
     createTime: row.createTime ? row.createTime : '',
     updateTime: row.updateTime ? row.updateTime : ''
   }
-  dialogTitle.value = `游戏信息详情 - ${row.nameZh}`
-  dialogVisible.value = true
+  drawer.value.title = `游戏信息详情 - ${row.nameZh}`
+  drawer.value.visible = true
+}
+
+// 关闭抽屉
+const handleClose = () => {
+  drawer.value.visible = false
 }
 
 // 暴露方法给父组件调用
 defineExpose({
-  handleOpen
+  handleOpen,
+  handleClose
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.drawer-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 20px 20px 0;
+  font-weight: bold;
+}
+</style>

@@ -66,7 +66,7 @@
 <script setup name="Article">
 import dayjs from 'dayjs'
 import { listArticle, addArticle, delArticle, getArticle, updateArticle } from '@/api/game/article'
-import Preview from './components/Preview'
+import Preview from './components/preview'
 import editView from './components/edit'
 
 const { proxy } = getCurrentInstance()

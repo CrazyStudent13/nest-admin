@@ -29,14 +29,10 @@ export default function createAutoImport(): PluginOption[] {
           'element-plus': ['ElMessage', 'ElMessageBox', 'ElNotification', 'ElLoading'],
           '@/composables/useAuth': ['useAuth'],
           '@/composables/useRequest': ['useRequest', 'download', 'isRelogin'],
-          'cat-tools': ['catTools'],
-          '@/composables/useCatTools': ['useCatTools'],
           '@/composables/useValidator': [
             'isExternal', 'isHttp', 'validURL', 'validUsername', 
             'validLowerCase', 'validUpperCase', 'validAlphabets', 
-            'validEmail', 'isString', 'isArray', 'safeValidate',
-            'urlSchema', 'emailSchema', 'usernameSchema',
-            'lowerCaseSchema', 'upperCaseSchema', 'alphabetsSchema'
+            'validEmail', 'isString', 'isArray', 'safeValidate'
           ]
         }
       ],

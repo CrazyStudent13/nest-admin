@@ -169,10 +169,6 @@
 import { listArticle, delArticle, getArticle } from '@/api/post/article'
 import Preview from './components/Preview'
 import ArticleForm from './components/ArticleForm'
-import { useDict } from '@/composables/useDict'
-import { resetForm } from '@/composables/useForm'
-import { useSubject } from '@/composables/useSubject'
-import { useRouter } from 'vue-router'
 
 const router = useRouter()
 

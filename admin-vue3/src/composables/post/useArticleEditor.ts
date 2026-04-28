@@ -4,11 +4,8 @@
  * 这个文件展示了如何将原有的文章编辑器页面重构为使用 useArticle 组合函数
  */
 
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { useArticle } from '@/composables/useArticle'
-import { useSubject } from '@/composables/useSubject'
-import { useDynamicTitle } from '@/composables/useDynamicTitle'
+import { debounce } from 'radash'
+import { useArticle, useSubject } from '@/composables/post'
 import type { Article } from '@/types/api'
 
 export function useArticleEditor() {
@@ -27,7 +24,6 @@ export function useArticleEditor() {
   const isEdit = ref(false)
   const subjectList = ref<any[]>([])
   const sidebarCollapsed = ref(false)
-  const saveTimer = ref<number | null>(null)
 
   // 文章完整数据
   const articleData = reactive<Partial<Article>>({
@@ -60,14 +56,6 @@ export function useArticleEditor() {
     
     // 初始化标题
     setTitle('文章新建 - 编辑器')
-  })
-
-  onUnmounted(() => {
-    // 清理定时器
-    if (saveTimer.value) {
-      clearTimeout(saveTimer.value)
-      saveTimer.value = null
-    }
   })
 
   // ==================== 核心方法 ====================
@@ -175,96 +163,78 @@ export function useArticleEditor() {
    * 准备保存数据
    */
   const prepareSaveData = (publishStatus: string): Partial<Article> => {
-    // 清除之前的定时器
-    if (saveTimer.value) {
-      clearTimeout(saveTimer.value)
+    const saveData = { ...articleData }
+    saveData.publishStatus = publishStatus
+    
+    // 确保数字类型字段正确转换
+    if (saveData.id) saveData.id = Number(saveData.id)
+    if (saveData.subjectId) saveData.subjectId = Number(saveData.subjectId)
+    if (saveData.sort !== undefined) saveData.sort = Number(saveData.sort)
+    if (saveData.likeNum !== undefined) saveData.likeNum = Number(saveData.likeNum)
+    if (saveData.readNum !== undefined) saveData.readNum = Number(saveData.readNum)
+    if (saveData.commentNum !== undefined) saveData.commentNum = Number(saveData.commentNum)
+    
+    return saveData
+  }
+
+  /**
+   * 执行保存操作（内部方法）
+   */
+  const executeSave = async (publishStatus: string, successMsg: string) => {
+    if (!validateForm()) {
+      return
     }
 
-    // 设置新的防抖定时器
-    saveTimer.value = setTimeout(async () => {
-      if (!validateForm()) {
-        return
+    loading.value = true
+    try {
+      const saveData = prepareSaveData(publishStatus)
+      
+      // 使用统一的 saveArticle 方法，自动判断新增或更新
+      const result = await articleManager.saveArticle(saveData)
+      
+      // 如果是新建，更新 ID
+      if (!articleData.id && result.id) {
+        const newId = Number(result.id)
+        articleId.value = newId
+        isEdit.value = true
+        articleData.id = newId
+        articleData.articleId = newId
+        
+        // 更新 URL
+        router.replace({ query: { id: newId } })
       }
-
-      loading.value = true
-      try {
-        const saveData = prepareSaveData('0') // 草稿状态
-        
-        // 使用统一的 saveArticle 方法，自动判断新增或更新
-        const result = await articleManager.saveArticle(saveData)
-        
-        // 如果是新建，更新 ID
-        if (!articleData.id && result.id) {
-          const newId = Number(result.id)
-          articleId.value = newId
-          isEdit.value = true
-          articleData.id = newId
-          articleData.articleId = newId
-          
-          // 更新 URL
-          router.replace({ query: { id: newId } })
-        }
-        
-        ElMessage.success('草稿保存成功')
-      } catch (error) {
-        console.error('保存草稿失败:', error)
-        ElMessage.error('保存草稿失败')
-      } finally {
-        loading.value = false
-        saveTimer.value = null
-      }
-    }, 300) // 300ms 防抖延迟
+      
+      ElMessage.success(successMsg)
+    } catch (error) {
+      console.error('保存失败:', error)
+      ElMessage.error('保存失败')
+    } finally {
+      loading.value = false
+    }
   }
+
+  /**
+   * 保存草稿（带防抖）
+   */
+  const handleSaveDraft = debounce(
+    { delay: 300 },
+    () => executeSave('0', '草稿保存成功')
+  )
 
   /**
    * 发布文章（带防抖）
    */
-  const handlePublish = async () => {
-    // 清除之前的定时器
-    if (saveTimer.value) {
-      clearTimeout(saveTimer.value)
+  const handlePublish = debounce(
+    { delay: 300 },
+    () => {
+      executeSave('1', '文章发布成功')
+      
+      // 发布成功后返回列表页
+      setTimeout(() => {
+        router.push('/post/article')
+      }, 1500)
     }
-
-    // 设置新的防抖定时器
-    saveTimer.value = setTimeout(async () => {
-      if (!validateForm()) {
-        return
-      }
-
-      loading.value = true
-      try {
-        const saveData = prepareSaveData('1') // 发布状态
-        
-        // 使用统一的 saveArticle 方法，自动判断新增或更新
-        const result = await articleManager.saveArticle(saveData)
-        
-        // 如果是新建，更新 ID
-        if (!articleData.id && result.id) {
-          const newId = Number(result.id)
-          articleId.value = newId
-          isEdit.value = true
-          articleData.id = newId
-          articleData.articleId = newId
-          
-          // 更新 URL
-          router.replace({ query: { id: newId } })
-        }
-        
-        ElMessage.success('文章发布成功')
-
-        // 发布成功后返回列表页
-        setTimeout(() => {
-          router.push('/post/article')
-        }, 1500)
-      } catch (error) {
-        console.error('发布文章失败:', error)
-        ElMessage.error('发布文章失败')
-      } finally {
-        loading.value = false
-        saveTimer.value = null
-      }
-    }, 300) // 300ms 防抖延迟
-  }
+  )
 
   // ==================== 返回 ====================
 

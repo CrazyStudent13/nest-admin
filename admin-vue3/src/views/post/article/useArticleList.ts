@@ -9,12 +9,8 @@
  * 4. 便于在 Nuxt 中复用
  */
 
-import { useArticle } from '@/composables/useArticle'
+import { useArticle, useSubject } from '@/composables/post'
 import { useDict as useDictUtils } from '@/utils/dict'
-import { useDict } from '@/composables/useDict'
-import { resetForm } from '@/composables/useForm'
-import { useSubject } from '@/composables/useSubject'
-import { useRouter } from 'vue-router'
 import type { Article } from '@/types/api'
 
 export function useArticleList() {

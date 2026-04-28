@@ -9,7 +9,8 @@
  * 4. 便于在 Nuxt 中复用
  */
 
-import { useArticle, useSubject } from '@/composables/post'
+import { useArticle } from '@/composables/post/useArticle'
+import { useSubject } from '@/composables/post/useSubject'
 import { useDict as useDictUtils } from '@/utils/dict'
 import type { Article } from '@/types/api'
 
@@ -247,10 +248,10 @@ export function useArticleList() {
     single,
     multiple,
     
-    // 字典（使用解构后的 ref）
-    post_article_publish_status: dictHelper.post_article_publish_status,
-    post_article_audit_status: dictHelper.post_article_audit_status,
-    post_article_source: dictHelper.post_article_source,
+    // 字典（使用原始字典数据 ref）
+    post_article_publish_status,
+    post_article_audit_status,
+    post_article_source,
     getDictLabel,
     getDictTagType,
     

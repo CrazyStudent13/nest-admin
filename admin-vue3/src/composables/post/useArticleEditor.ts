@@ -5,7 +5,8 @@
  */
 
 import { debounce } from 'radash'
-import { useArticle, useSubject } from '@/composables/post'
+import { useArticle } from '@/composables/post/useArticle'
+import { useSubject } from '@/composables/post/useSubject'
 import type { Article } from '@/types/api'
 
 export function useArticleEditor() {

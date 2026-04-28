@@ -118,7 +118,7 @@
 <script setup name="ArticleEditor">
 import MdEditor from '@/components/MdEditor/index.vue'
 import ImageUploadCover from '@/components/ImageUploadCover/index.vue'
-import { useArticleEditor } from '@/composables/post'
+import { useArticleEditor } from '@/composables/post/useArticleEditor'
 
 // 使用组合函数
 const {

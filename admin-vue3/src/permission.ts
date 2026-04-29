@@ -14,7 +14,7 @@ import { ElMessage } from 'element-plus'
 
 NProgress.configure({ showSpinner: false })
 
-const whiteList: string[] = ['/login', '/register']
+const whiteList: string[] = ['/login']
 
 // 记录当前正在导航的目标路径
 let navigatingToPath: string | null = null

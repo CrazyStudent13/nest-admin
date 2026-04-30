@@ -3,6 +3,7 @@ import { encrypt, decrypt } from '@/utils/jsencrypt'
 import { getCodeImg } from '@/api/login'
 import { isEmpty } from 'radash'
 import { ElMessage } from 'element-plus'
+import { reactive } from 'vue'
 
 // ==================== 类型定义 ====================
 

@@ -33,7 +33,6 @@
 
       <div class="login-tips">
         <el-checkbox v-model="loginForm.model.rememberMe" style="margin: 0px 0px 25px 0px">记住密码</el-checkbox>
-        <el-link v-if="false" class="login-tips-link" href="/register" target="_blank" type="primary">去注册账号</el-link>
       </div>
 
       <el-form-item style="width: 100%">
@@ -52,7 +51,6 @@
 
 <script setup lang="ts">
 import useUserStore from '@/store/modules/user'
-import { authCodeInfo, getValidateCode, getUserCookie, setUserCookie } from '@/composables/useAuthCode'
 
 const userStore = useUserStore()
 const route = useRoute()
@@ -85,7 +83,8 @@ watch(
   { immediate: true }
 )
 
-function handleLogin() {
+// 创建防抖的登录处理函数
+const debouncedHandleLogin = useDebounce(() => {
   loginRef.value.validate((valid) => {
     if (valid) {
       authCodeInfo.loading = true
@@ -110,15 +109,26 @@ function handleLogin() {
         })
     }
   })
+}, 500)
+
+// 创建防抖的验证码刷新函数
+const debouncedHandleRefreshCaptcha = useDebounce(() => {
+  getValidateCode(loginForm.model, true)
+}, 1000)
+
+function handleLogin() {
+  debouncedHandleLogin()
 }
 
 // 刷新验证码
 function handleRefreshCaptcha() {
-  getValidateCode(loginForm.model, true)
+  debouncedHandleRefreshCaptcha()
 }
 
+// 初始化时获取验证码和从cookie中恢复用户信息
 getValidateCode(loginForm.model, false)
-loginForm.model = getUserCookie(loginForm.model)
+const userData = getUserCookie(loginForm.model)
+Object.assign(loginForm.model, userData)
 </script>
 
 <style lang="scss" scoped>

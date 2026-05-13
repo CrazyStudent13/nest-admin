@@ -115,7 +115,8 @@
 import { listConfig, addConfig, delConfig, getConfig, updateConfig } from '@/api/system/config'
 import { useDict } from '@/composables/useDict'
 import { resetForm } from '@/composables/useForm'
-import { download, parseTime } from '@/composables/useCommon'
+import { parseTime } from '@/composables/useCommon'
+import { download } from '@/composables/useRequest'
 
 const { sys_yes_no, getDictLabel } = useDict('sys_yes_no')
 

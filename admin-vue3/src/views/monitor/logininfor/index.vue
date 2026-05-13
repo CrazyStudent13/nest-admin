@@ -68,7 +68,8 @@
 import { list, delLogininfor, cleanLogininfor, unlockLogininfor } from '@/api/monitor/logininfor'
 import { useDict } from '@/composables/useDict'
 import { resetForm } from '@/composables/useForm'
-import { addDateRange, download, parseTime } from '@/composables/useCommon'
+import { addDateRange, parseTime } from '@/composables/useCommon'
+import { download } from '@/composables/useRequest'
 
 const { sys_common_status, getDictLabel } = useDict('sys_common_status')
 

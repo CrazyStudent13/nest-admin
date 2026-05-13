@@ -157,7 +157,8 @@ import { listType, delType, refreshCache } from '@/api/system/dict/type'
 import { listData, delData } from '@/api/system/dict/data'
 import { useDict } from '@/composables/useDict'
 import { resetForm } from '@/composables/useForm'
-import { download, parseTime } from '@/composables/useCommon'
+import { parseTime } from '@/composables/useCommon'
+import { download } from '@/composables/useRequest'
 
 const { sys_normal_disable, getDictLabel } = useDict('sys_normal_disable')
 

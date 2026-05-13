@@ -162,7 +162,8 @@ import { addRole, changeRoleStatus, dataScope, delRole, getRole, listRole, updat
 import { roleMenuTreeselect, treeselect as menuTreeselect } from '@/api/system/menu'
 import { useDict } from '@/composables/useDict'
 import { resetForm } from '@/composables/useForm'
-import { addDateRange, download, parseTime } from '@/composables/useCommon'
+import { addDateRange, parseTime } from '@/composables/useCommon'
+import { download } from '@/composables/useRequest'
 
 // ==================== 实例和字典 ====================
 const router = useRouter()

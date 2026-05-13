@@ -63,6 +63,11 @@ const authCodeInfo = reactive<AuthCodeInfo>({
 // 记录上次刷新的时间戳
 let lastRefreshTime = 0
 
+// 自动重试相关配置
+const MAX_RETRY_COUNT = 3 // 最大重试次数
+const RETRY_DELAY = 2000 // 重试间隔（毫秒），默认 2 秒
+let retryCount = 0 // 当前重试次数
+
 // ==================== 核心函数 ====================
 
 /**
@@ -99,6 +104,9 @@ const getValidateCode = async (form: LoginForm, isClick = false): Promise<void> 
         ElMessage.warning(`请 ${remainingSeconds} 秒后再刷新`)
         return
       }
+
+      // 用户手动刷新，重置重试计数
+      retryCount = 0
     }
 
     // 如果是点击刷新，设置 refreshing 状态
@@ -120,13 +128,42 @@ const getValidateCode = async (form: LoginForm, isClick = false): Promise<void> 
       if (isClick) {
         lastRefreshTime = Date.now()
       }
+      // 成功获取后重置重试计数
+      retryCount = 0
     } else {
       authCodeInfo.loading = false
       authCodeInfo.refreshing = false
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('验证码获取错误:', err)
     authCodeInfo.refreshing = false
+
+    // 检查是否是验证码过期的错误（来自登录接口）
+    if (err?.message?.includes('验证码已过期')) {
+      // 验证码过期不需要重试，提示用户重新获取即可
+      ElMessage.warning('验证码已过期，请重新获取')
+      retryCount = 0 // 重置重试计数
+      return
+    }
+
+    // 自动重试逻辑（仅针对网络错误、超时等）
+    retryCount++
+    if (retryCount < MAX_RETRY_COUNT) {
+      console.log(`验证码获取失败，将在 ${RETRY_DELAY / 1000} 秒后自动重试（${retryCount}/${MAX_RETRY_COUNT}）`)
+      // 显示友好的提示信息
+      ElMessage.warning({
+        message: `验证码加载失败，正在自动重试（${retryCount}/${MAX_RETRY_COUNT}）...`,
+        duration: RETRY_DELAY
+      })
+      // 延迟后自动重试
+      setTimeout(() => {
+        getValidateCode(form, false) // 注意：这里传 false，表示自动重试
+      }, RETRY_DELAY)
+    } else {
+      // 超过最大重试次数，提示用户手动刷新
+      ElMessage.error('验证码加载失败，请点击验证码图片手动刷新')
+      retryCount = 0 // 重置计数
+    }
   }
 }
 

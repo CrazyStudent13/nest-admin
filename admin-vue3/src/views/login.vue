@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 import useUserStore from '@/store/modules/user'
+import { authCodeInfo, getValidateCode, getUserCookie, setUserCookie } from '@/composables/useAuthCode'
 
 const userStore = useUserStore()
 const route = useRoute()

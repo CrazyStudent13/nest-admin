@@ -8,3 +8,21 @@
 
 # Upload folder (local test files)
 /upload
+
+# Environment files (sensitive information)
+.env
+.env.*
+!.env.example
+
+# Docker related files
+Dockerfile
+.dockerignore
+nginx.conf
+docker-compose.yml
+
+# Build output
+dist/
+
+# Auto-generated files
+auto-imports.d.ts
+components.d.ts

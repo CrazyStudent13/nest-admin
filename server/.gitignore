@@ -50,3 +50,6 @@ src/config/env/*.yml
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Docker files
+Dockerfile

@@ -15,10 +15,9 @@
 !.env.example
 
 # Docker related files
-Dockerfile
-.dockerignore
-nginx.conf
-docker-compose.yml
+**/Dockerfile
+**/.dockerignore
+**/nginx.conf
 
 # Build output
 dist/

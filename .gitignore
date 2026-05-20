@@ -15,9 +15,10 @@
 !.env.example
 
 # Docker related files
-**/Dockerfile
-**/.dockerignore
-**/nginx.conf
+admin-vue3/Dockerfile
+admin-vue3/.dockerignore
+admin-vue3/nginx.conf
+server/Dockerfile
 
 # Build output
 dist/

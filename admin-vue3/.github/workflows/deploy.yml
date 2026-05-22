@@ -95,9 +95,9 @@ jobs:
             echo "🛑 停止旧容器..."
             docker compose down || true
             
-            # 构建新镜像
+            # 构建新镜像（使用缓存加速）
             echo "🔨 构建新镜像..."
-            docker compose build --no-cache
+            docker compose build
             
             # 启动新容器
             echo "🚀 启动新容器..."

@@ -69,7 +69,7 @@ redis:
 
 # jwt 配置
 jwt:
-  secretkey: ''                 # JWT 密钥（生产环境必须修改为复杂密钥）
+  secretkey: 'my-super-secret-jwt-key-2024-production'                 # JWT 密钥（生产环境必须修改为复杂密钥）
   expiresin: '24h'              # Token 过期时间
   refreshExpiresIn: '7d'        # 刷新 Token 过期时间
 

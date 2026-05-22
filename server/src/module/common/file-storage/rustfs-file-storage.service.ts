@@ -14,7 +14,7 @@ export class RustFSFileStorage implements IFileStorage, OnModuleInit {
   private serveRoot: string;
 
   constructor(private configService: ConfigService) {
-    const endPoint = this.configService.get<string>('rustfs.endPoint', '127.0.0.1');
+    const endPoint = this.configService.get<string>('rustfs.endPoint');
 
     // 如果 endPoint 为空，不创建 RustFS 客户端（避免启动失败）
     if (!endPoint) {

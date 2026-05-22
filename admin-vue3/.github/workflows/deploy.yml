@@ -75,19 +75,46 @@ jobs:
             
             # 创建或更新 .env 文件
             cat > .env << EOF
-            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
-            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-            MYSQL_HOST=host.docker.internal
-            MYSQL_PORT=3306
-            MYSQL_USERNAME=root
-            REDIS_HOST=host.docker.internal
-            REDIS_PORT=6379
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            REDIS_DB=2
-            SERVER_PORT=8080
-            WEB_PORT=8888
-            DEPLOY_PATH=/opt/deploy/nest-admin
-            EOF
+# 数据库配置
+MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+MYSQL_HOST=host.docker.internal
+MYSQL_PORT=3306
+MYSQL_USERNAME=root
+
+# Redis 配置
+REDIS_HOST=host.docker.internal
+REDIS_PORT=6379
+REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+REDIS_DB=2
+
+# 服务端口
+SERVER_PORT=8080
+WEB_PORT=8888
+DEPLOY_PATH=/opt/deploy/nest-admin
+
+# JWT 配置
+JWT_SECRETKEY=${{ secrets.JWT_SECRETKEY }}
+JWT_EXPIRES_IN=24h
+JWT_REFRESH_EXPIRES_IN=7d
+
+# 文件存储配置
+APP_FILE_STORAGE_TYPE=rustfs
+RUSTFS_ENDPOINT=host.docker.internal
+RUSTFS_PORT=9000
+RUSTFS_ACCESS_KEY=rustfsadmin
+RUSTFS_SECRET_KEY=${{ secrets.RUSTFS_SECRET_KEY }}
+RUSTFS_BUCKET=nest-admin
+RUSTFS_USE_SSL=false
+
+# MinIO 配置（留空，使用 RustFS）
+MINIO_ENDPOINT=
+MINIO_PORT=
+MINIO_ACCESS_KEY=
+MINIO_SECRET_KEY=
+MINIO_BUCKET=
+MINIO_USE_SSL=false
+EOF
             
             echo "✅ .env 文件已更新"
             

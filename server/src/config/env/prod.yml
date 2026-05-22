@@ -24,7 +24,7 @@ minio:
 
 # RustFS 对象存储配置
 rustfs:
-  endPoint: 'host.docker.internal'  # RustFS 服务器地址
+  endPoint: '172.17.0.1'        # RustFS 服务器地址（Docker 网桥网关 IP）
   port: 9000                    # RustFS API 端口
   useSSL: false                 # 是否使用 SSL
   accessKey: 'rustfsadmin'      # RustFS Access Key
@@ -44,7 +44,7 @@ cos:
 # 数据库配置
 db:
   mysql:
-    host: 'host.docker.internal'  # 数据库地址
+    host: '172.17.0.1'  # Docker 网桥网关 IP（访问宿主机）
     username: 'root'              # 数据库用户名
     password: 'mysql_6zaSGd'      # 数据库密码
     database: 'nest-db'           # 数据库名称
@@ -61,7 +61,7 @@ db:
 
 # redis 配置
 redis:
-  host: 'host.docker.internal'  # Redis 地址
+  host: '172.17.0.1'  # Docker 网桥网关 IP（访问宿主机）
   password: 'redis_dECN6N'      # Redis 密码
   port: 6379                    # Redis 端口
   db: 0                         # Redis 数据库编号

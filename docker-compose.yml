@@ -6,6 +6,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: nest-admin-server
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       NODE_ENV: production
       # Pass environment variables to the container

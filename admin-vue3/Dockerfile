@@ -3,8 +3,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# 安装 pnpm
-RUN npm install -g pnpm@8
+# 安装 pnpm（使用最新版本）
+RUN npm install -g pnpm
 
 # 复制 package.json 和 pnpm-lock.yaml
 COPY package.json pnpm-lock.yaml ./

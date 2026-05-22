@@ -1,0 +1,130 @@
+name: Deploy Full Stack to Server
+
+on:
+  push:
+    branches: [deploy]  # 只在 deploy 分支触发
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      # 2. 设置 SSH 密钥
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      # 3. 添加服务器到 known_hosts
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      
+      # 4. 上传代码到服务器
+      - name: Upload code to server
+        run: |
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude 'dist' \
+            --exclude '.env' \
+            --exclude 'docs' \
+            --exclude '*.md' \
+            ./ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_PATH }}/
+      
+      # 5. 在服务器上清理旧资源、构建和部署
+      - name: Clean, Build and Deploy on Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            
+            echo "🧹 开始清理旧的 Docker 资源..."
+            
+            # 删除旧的镜像（保留最新的2个）
+            docker images --format '{{.ID}} {{.Repository}}' | grep nest-admin | tail -n +3 | awk '{print $1}' | xargs -r docker rmi -f || true
+            
+            # 清理悬空镜像
+            docker image prune -f
+            
+            # 清理停止的容器
+            docker container prune -f
+            
+            # 清理未使用的卷
+            docker volume prune -f
+            
+            # 清理构建缓存
+            docker builder prune -f
+            
+            echo "✅ 清理完成"
+            
+            echo ""
+            echo "📦 开始部署..."
+            
+            # 创建或更新 .env 文件
+            cat > .env << EOF
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_HOST=host.docker.internal
+            MYSQL_PORT=3306
+            MYSQL_USERNAME=root
+            REDIS_HOST=host.docker.internal
+            REDIS_PORT=6379
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            REDIS_DB=2
+            SERVER_PORT=8080
+            WEB_PORT=8888
+            DEPLOY_PATH=/opt/deploy/nest-admin
+            EOF
+            
+            echo "✅ .env 文件已更新"
+            
+            # 停止旧容器
+            echo "🛑 停止旧容器..."
+            docker compose down || true
+            
+            # 构建新镜像
+            echo "🔨 构建新镜像..."
+            docker compose build --no-cache
+            
+            # 启动新容器
+            echo "🚀 启动新容器..."
+            docker compose up -d
+            
+            # 等待服务启动
+            echo "⏳ 等待服务启动..."
+            sleep 15
+            
+            # 检查容器状态
+            echo ""
+            echo "📊 容器状态："
+            docker compose ps
+            
+            # 查看磁盘使用情况
+            echo ""
+            echo "💾 Docker 磁盘使用情况："
+            docker system df
+            
+            # 查看日志（最后50行）
+            echo ""
+            echo "📝 最新日志："
+            docker compose logs --tail=50
+            
+            echo ""
+            echo "=========================================="
+            echo "✅ 部署完成！"
+            echo "前端访问地址：http://${{ secrets.SERVER_HOST }}:8888"
+            echo "后端 API 地址：http://${{ secrets.SERVER_HOST }}:8080"
+            echo "=========================================="

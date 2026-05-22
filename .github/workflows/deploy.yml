@@ -99,17 +99,22 @@ jobs:
             
             echo "✅ .env 文件已更新"
             
-            # 停止旧容器
-            echo "🛑 停止旧容器..."
-            docker compose down || true
-            
-            # 构建新镜像
-            echo "🔨 构建新镜像..."
-            docker compose build --no-cache
-            
-            # 启动新容器
-            echo "🚀 启动新容器..."
-            docker compose up -d
+            # 先单独发布后端，避免前端镜像源异常阻塞后端上线
+            echo "🔨 构建后端镜像..."
+            docker compose build --no-cache server
+
+            echo "🚀 启动后端容器..."
+            docker compose up -d server
+
+            # 前端单独构建；如果镜像源异常，保留旧前端，不阻塞后端部署
+            echo "🔨 构建前端镜像..."
+            if docker compose build --no-cache admin-vue3; then
+              echo "🚀 启动前端容器..."
+              docker compose up -d admin-vue3
+            else
+              echo "⚠️ 前端镜像构建失败，尝试保留现有前端镜像并继续部署后端"
+              docker compose up -d --no-build admin-vue3 || true
+            fi
             
             # 等待服务启动
             echo "⏳ 等待服务启动..."
@@ -128,7 +133,7 @@ jobs:
             # 查看日志（最后50行）
             echo ""
             echo "📝 最新日志："
-            docker compose logs --tail=50
+            docker compose logs --tail=50 server admin-vue3
             
             echo ""
             echo "=========================================="

@@ -50,6 +50,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           command_timeout: 20m
           script: |
+            set -e
             cd ${{ secrets.DEPLOY_PATH }}
             
             echo "🧹 开始清理旧的 Docker 资源..."
@@ -78,14 +79,14 @@ jobs:
             cat > .env << EOF
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-            MYSQL_HOST=172.17.0.1
+            MYSQL_HOST=host.docker.internal
             MYSQL_PORT=3306
             MYSQL_USERNAME=root
-            REDIS_HOST=172.17.0.1
+            REDIS_HOST=host.docker.internal
             REDIS_PORT=6379
             REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
             REDIS_DB=2
-            RUSTFS_ENDPOINT=172.17.0.1
+            RUSTFS_ENDPOINT=host.docker.internal
             RUSTFS_PORT=9000
             RUSTFS_ACCESS_KEY=${{ secrets.RUSTFS_ACCESS_KEY }}
             RUSTFS_SECRET_KEY=${{ secrets.RUSTFS_SECRET_KEY }}

@@ -44,10 +44,10 @@ cos:
 # 数据库配置
 db:
   mysql:
-    host: ''                    # 数据库地址
-    username: ''                # 数据库用户名
-    password: ''                # 数据库密码
-    database: ''                # 数据库名称
+    host: 'host.docker.internal'  # 数据库地址（Docker 中访问宿主机）
+    username: 'root'              # 数据库用户名
+    password: 'mysql_6zaSGd'      # 数据库密码
+    database: 'nest-db'           # 数据库名称
     port: 3306                  # 数据库端口
     charset: 'utf8mb4'          # 字符集
     logger: 'file'              # 日志类型
@@ -61,8 +61,8 @@ db:
 
 # redis 配置
 redis:
-  host: ''                      # Redis 地址
-  password: ''                  # Redis 密码
+  host: 'host.docker.internal'  # Redis 地址（Docker 中访问宿主机）
+  password: 'redis_dECN6N'      # Redis 密码
   port: 6379                    # Redis 端口
   db: 0                         # Redis 数据库编号
   keyPrefix: ''                 # Key 前缀

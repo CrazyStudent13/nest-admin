@@ -134,7 +134,7 @@ const isDev = import.meta.env.VITE_APP_ENV === 'development'
 // 生产环境：通过后端代理访问
 const apiBaseUrl = isDev ? 'http://localhost:8080' : window.location.origin
 
-const swaggerUrl = ref(`${apiBaseUrl}/swagger-ui`)
+const swaggerUrl = ref(`${apiBaseUrl}/swagger-ui/`)
 const redocUrl = ref(`${apiBaseUrl}/docs`)
 const apifoxJsonUrl = ref(`${apiBaseUrl}/openapi.json`)
 

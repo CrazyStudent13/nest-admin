@@ -181,7 +181,7 @@ const apiDocs = [
     name: 'Swagger UI',
     description: '交互式 API 文档，支持在线调试',
     icon: 'Promotion',
-    url: `${window.location.origin}/swagger-ui`,
+    url: `${window.location.origin}/swagger-ui/`,
     type: 'primary'
   },
   {

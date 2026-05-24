@@ -22,6 +22,7 @@ selenium-debug.log
 .env
 .env.development
 .env.production
+!.env.production
 .env.staging
 
 # 自动生成的类型声明文件（从 config 复制）

@@ -119,6 +119,14 @@ jobs:
             # 等待服务启动
             echo "⏳ 等待服务启动..."
             sleep 15
+
+            echo ""
+            echo "🔎 后端连通性诊断："
+            docker exec nest-admin-server node -e "const net=require('net'); const targets=[['MYSQL_HOST',process.env.MYSQL_HOST,Number(process.env.MYSQL_PORT||3306)],['REDIS_HOST',process.env.REDIS_HOST,Number(process.env.REDIS_PORT||6379)],['RUSTFS_ENDPOINT',process.env.RUSTFS_ENDPOINT,Number(process.env.RUSTFS_PORT||9000)]]; let i=0; const run=()=>{ if(i>=targets.length) process.exit(0); const [name,host,port]=targets[i++]; const s=net.createConnection({host,port,timeout:5000},()=>{console.log('[OK]',name,host+':'+port); s.destroy(); run();}); s.on('timeout',()=>{console.log('[TIMEOUT]',name,host+':'+port); s.destroy(); run();}); s.on('error',(e)=>{console.log('[ERROR]',name,host+':'+port,e.code||e.message); run();});}; run();"
+
+            echo ""
+            echo "🔎 后端 HTTP 健康探测："
+            docker exec nest-admin-server node -e "const http=require('http'); const req=http.get('http://127.0.0.1:8080/',res=>{console.log('[HTTP]',res.statusCode); res.resume(); process.exit(0);}); req.on('error',e=>{console.log('[HTTP_ERROR]',e.code||e.message); process.exit(0);}); req.setTimeout(5000,()=>{console.log('[HTTP_TIMEOUT]'); req.destroy(); process.exit(0);});"
             
             # 检查容器状态
             echo ""

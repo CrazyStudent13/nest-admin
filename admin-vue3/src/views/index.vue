@@ -181,21 +181,21 @@ const apiDocs = [
     name: 'Swagger UI',
     description: '交互式 API 文档，支持在线调试',
     icon: 'Promotion',
-    url: 'http://localhost:8080/swagger-ui',
+    url: `${window.location.origin}/swagger-ui`,
     type: 'primary'
   },
   {
     name: 'Redoc 文档',
     description: '美观的 API 文档展示，易于阅读',
     icon: 'Document',
-    url: 'http://localhost:8080/docs',
+    url: `${window.location.origin}/docs`,
     type: 'success'
   },
   {
     name: 'Apifox 导入',
     description: 'OpenAPI 规范文件，支持导入 Apifox',
     icon: 'Link',
-    url: 'http://localhost:8080/openapi.json',
+    url: `${window.location.origin}/openapi.json`,
     type: 'warning'
   }
 ]

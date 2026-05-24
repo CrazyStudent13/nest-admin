@@ -79,10 +79,10 @@ async function bootstrap() {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: [`'self'`],
-          styleSrc: [`'self'`, `'unsafe-inline'`, 'cdn.redoc.ly', 'fonts.googleapis.com'],
-          fontSrc: [`'self'`, 'fonts.gstatic.com', 'cdn.redoc.ly'],
-          scriptSrc: [`'self'`, `'unsafe-inline'`, 'cdn.redoc.ly'],
-          imgSrc: [`'self'`, 'data:', 'cdn.redoc.ly'],
+          styleSrc: [`'self'`, `'unsafe-inline'`, 'cdn.redoc.ly', 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
+          fontSrc: [`'self'`, 'fonts.gstatic.com', 'cdn.redoc.ly', 'cdn.jsdelivr.net'],
+          scriptSrc: [`'self'`, `'unsafe-inline'`, 'cdn.redoc.ly', 'cdn.jsdelivr.net'],
+          imgSrc: [`'self'`, 'data:', 'cdn.redoc.ly', 'cdn.jsdelivr.net'],
           frameAncestors: [`'self'`, 'http://localhost:*', 'https://localhost:*'],
           upgradeInsecureRequests: null,
         },

@@ -1,4 +1,5 @@
-# 测试环境配置
+# 生产环境配置模板
+# 复制本文件为同目录下的 prod.yml 后填入真实配置；prod.yml 已被 .gitignore 忽略，不会入库
 # 注意：请根据实际情况修改以下配置项
 
 app:
@@ -51,10 +52,10 @@ db:
     port: 3306                  # 数据库端口
     charset: 'utf8mb4'          # 字符集
     logger: 'file'              # 日志类型
-    synchronize: true           # 测试环境可以开启自动同步
-    logging: true               # 测试环境可以开启 SQL 日志
+    synchronize: false          # 生产环境必须设为 false
+    logging: false              # 生产环境建议关闭 SQL 日志
     extra:
-      connectionLimit: 20       # 连接池最大连接数
+      connectionLimit: 50       # 连接池最大连接数（生产环境建议更大）
       connectTimeout: 30000     # 连接超时时间（毫秒）
       enableKeepAlive: true     # 启用 TCP KeepAlive
       keepAliveInitialDelay: 0  # KeepAlive 初始延迟
@@ -69,20 +70,20 @@ redis:
 
 # jwt 配置
 jwt:
-  secretkey: ''                 # JWT 密钥
+  secretkey: ''                 # JWT 密钥（生产环境必须修改为复杂密钥）
   expiresin: '24h'              # Token 过期时间
   refreshExpiresIn: '7d'        # 刷新 Token 过期时间
 
 # 日志配置
 log:
   dir: 'logs'                   # 日志目录
-  level: 'debug'                # 测试环境建议设为 debug
+  level: 'warn'                 # 生产环境建议设为 warn 或 error
   maxFiles: '30d'               # 日志保留天数
   maxSize: '20m'                # 日志文件大小限制
 
 # swagger 配置
 swagger:
-  enable: true                  # 测试环境可以开启 Swagger
+  enable: false                 # 生产环境建议关闭 Swagger
   path: 'api-docs'              # Swagger 文档路径
 
 # 权限配置 - 白名单路由（不需要 token 验证的接口）

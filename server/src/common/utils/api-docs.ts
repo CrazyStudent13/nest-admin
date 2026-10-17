@@ -56,8 +56,9 @@ const REDOC_HTML = (themeColor = '#1890ff') => `
       hide-hostname="true"
       required-props-first="true"
       expand-responses="200,400,401,403,404,500"
+      disable-telemetry="true"
     ></redoc>
-    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <script type="module" src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
   </body>
 </html>
 `;

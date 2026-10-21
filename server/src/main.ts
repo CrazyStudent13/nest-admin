@@ -6,10 +6,11 @@ import { mw as requestIpMw } from 'request-ip';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from 'src/app.module';
 import { HttpExceptionsFilter } from 'src/common/filters/http-exceptions-filter';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { setupApiDocs } from 'src/common/utils/api-docs';
+import { setupProcessGuards } from 'src/common/utils/process-guard';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 async function bootstrap() {
@@ -124,6 +125,7 @@ async function bootstrap() {
 
   // 获取真实 ip
   app.use(requestIpMw({ attributeName: 'ip' }));
+  app.enableShutdownHooks();
   //服务端口
   const port = config.get<number>('app.port') || 8080;
   await app.listen(port);
@@ -139,4 +141,8 @@ async function bootstrap() {
     `\n========================================\n`,
   );
 }
-bootstrap();
+setupProcessGuards();
+bootstrap().catch((error) => {
+  new Logger('Bootstrap').error(`服务启动失败：${error.stack ?? error.message}`);
+  process.exit(1);
+});

@@ -4,6 +4,7 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: nest-admin-server
+    restart: unless-stopped
     environment:
       NODE_ENV: production
       MYSQL_HOST: ${MYSQL_HOST:-host.docker.internal}
@@ -33,6 +34,7 @@ services:
       context: ./admin-vue3
       dockerfile: Dockerfile
     container_name: nest-admin-vue3
+    restart: unless-stopped
     environment:
       RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-host.docker.internal}
       RUSTFS_PORT: ${RUSTFS_PORT:-9000}

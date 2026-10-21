@@ -146,8 +146,8 @@
     </el-card>
   </div>
 
-  <dict-group-edit ref="dictGroupEditRef" @refresh="dictGroup.handleRefresh" />
-  <dict-data-edit ref="dictDataEditRef" @refresh="dictData.handleRefresh" />
+  <dict-group-edit ref="dictGroupEditRef" @refresh="handleDictGroupChanged" />
+  <dict-data-edit ref="dictDataEditRef" @refresh="handleDictDataChanged" />
 </template>
 
 <script setup name="Dict">
@@ -156,6 +156,7 @@ import dictDataEdit from './components/dictDataEdit'
 import { listType, delType, refreshCache } from '@/api/system/dict/type'
 import { listData, delData } from '@/api/system/dict/data'
 import { useDict } from '@/composables/useDict'
+import useDictStore from '@/store/modules/dict'
 import { resetForm } from '@/composables/useForm'
 import { parseTime } from '@/composables/useCommon'
 import { download } from '@/composables/useRequest'
@@ -227,6 +228,7 @@ const dictGroup = reactive({
       })
       .then(() => {
         dictGroup.request()
+        refreshLocalDictCache()
         ElMessage.success('删除成功')
       })
   },
@@ -266,9 +268,12 @@ const dictGroup = reactive({
   handleRefreshCache: () => {
     loading.value = true
     refreshCache()
+      .then(() => useDictStore().initDict({ force: true }))
       .then(() => {
         ElMessage.success('刷新成功')
-        useDictStore().cleanDict()
+      })
+      .catch((error) => {
+        console.error('刷新字典缓存失败:', error)
       })
       .finally(() => {
         loading.value = false
@@ -313,8 +318,9 @@ const dictData = reactive({
       })
       .then(() => {
         dictData.request()
-        ElMessage.success('删除成功')
         useDictStore().removeDict(dictData.query.dictType)
+        refreshLocalDictCache()
+        ElMessage.success('删除成功')
       })
   },
   handleExport: () => {
@@ -333,6 +339,23 @@ const dictData = reactive({
     dictData.selection = selection
   }
 })
+
+// 字典数据变更后同步失效本地持久化缓存，并重新拉取全量字典
+function refreshLocalDictCache() {
+  useDictStore().initDict({ force: true }).catch((error) => {
+    console.error('字典缓存刷新失败:', error)
+  })
+}
+
+function handleDictGroupChanged() {
+  dictGroup.handleRefresh()
+  refreshLocalDictCache()
+}
+
+function handleDictDataChanged() {
+  dictData.handleRefresh()
+  refreshLocalDictCache()
+}
 
 watch(dictGroup.query, (val) => {
   dictGroupRef.value.filter(val.dictName)

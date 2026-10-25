@@ -11,7 +11,7 @@
 
 import { useArticle } from '@/composables/post/useArticle'
 import { useSubject } from '@/composables/post/useSubject'
-import { useDict as useDictUtils } from '@/utils/dict'
+import { useDict as useDictUtils } from '@/composables/useDict'
 import type { Article } from '@/types/api'
 
 export function useArticleList() {

@@ -1,22 +1,24 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'nest-admin docs',
-  description: 'Deployment and development notes for nest-admin',
+  base: '/manual/',
+  title: 'nest-admin 文档',
+  description: 'nest-admin 的部署与开发文档',
   themeConfig: {
     nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Deploy', link: '/deploy-online/step' },
-      { text: 'Auto Deploy', link: '/deploy-online/auto-deploy-overview' },
-      { text: 'Dev', link: '/development-tips/partner' },
+      { text: '首页', link: '/' },
+      { text: '部署', link: '/deploy-online/step' },
+      { text: '自动部署', link: '/deploy-online/auto-deploy-overview' },
+      { text: '开发', link: '/development-tips/partner' },
+      { text: '发布记录', link: '/releases' },
     ],
 
     sidebar: {
       '/deploy-online/': [
         {
-          text: 'Online Deploy',
+          text: '在线部署',
           items: [
-            { text: 'Overview', link: '/deploy-online/step' },
+            { text: '部署概览', link: '/deploy-online/step' },
             { text: 'MySQL', link: '/deploy-online/mysql' },
             { text: 'Redis', link: '/deploy-online/redis' },
             { text: 'PM2', link: '/deploy-online/pm2' },
@@ -24,20 +26,28 @@ export default defineConfig({
           ],
         },
         {
-          text: 'Auto Deploy',
+          text: '自动部署',
           items: [
-            { text: 'Minimal Flow', link: '/deploy-online/auto-deploy-overview' },
-            { text: 'Secrets', link: '/deploy-online/auto-deploy-secrets' },
-            { text: 'Troubleshooting', link: '/deploy-online/auto-deploy-troubleshooting' },
-            { text: 'Command Checklist', link: '/deploy-online/auto-deploy-checklist' },
+            { text: '最小闭环', link: '/deploy-online/auto-deploy-overview' },
+            { text: '密钥配置', link: '/deploy-online/auto-deploy-secrets' },
+            { text: '问题排查', link: '/deploy-online/auto-deploy-troubleshooting' },
+            { text: '命令速查', link: '/deploy-online/auto-deploy-checklist' },
           ],
         },
       ],
       '/development-tips/': [
         {
-          text: 'Development',
+          text: '开发',
           items: [
-            { text: 'Collaboration', link: '/development-tips/partner' },
+            { text: '协作开发', link: '/development-tips/partner' },
+          ],
+        },
+      ],
+      '/releases': [
+        {
+          text: '发布记录',
+          items: [
+            { text: 'v1.0.0 · 2026-10-25', link: '/releases#v1-0-0' },
           ],
         },
       ],

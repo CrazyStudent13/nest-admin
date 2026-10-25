@@ -20,6 +20,9 @@
             <el-button icon="HomeFilled" @click="goTarget('https://nest-admin.dooring.vip/prod-api/swagger-ui')">
               访问文档
             </el-button>
+            <el-button v-if="isDev" icon="Reading" @click="goTarget('/manual/')">
+              项目文档
+            </el-button>
           </div>
         </div>
       </el-col>
@@ -150,6 +153,7 @@
 import { Monitor, ChatDotRound, Guide, Goods, Document, Promotion, Link } from '@element-plus/icons-vue'
 
 const version = ref('1.0.0')
+const isDev = import.meta.env.DEV
 
 // 后端技术栈
 const backendTechs = [

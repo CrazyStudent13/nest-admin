@@ -56,6 +56,12 @@ export default defineConfig(({ mode, command }: ConfigEnv): UserConfig => {
         "/profile":{
           target: 'http://localhost:8080',
           changeOrigin: true,
+        },
+        // 项目文档（VitePress，本地 docs 服务提供）
+        '/manual': {
+          target: 'http://localhost:5173',
+          changeOrigin: true,
+          ws: true
         }
       }
     },

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# 一键启动前后端开发服务（用法：bash bin/dev.sh）
-# - 启动前释放 8080 / 8888 端口
+# 一键启动前端、后端和文档开发服务（用法：bash bin/dev.sh）
+# - 启动前释放 5173 / 8080 / 8888 端口
 # - 前端先静默启动（不弹浏览器），后端就绪后再打开页面，避免首屏 502
-# - Ctrl+C 同时停止前后端
+# - 文档通过前端 8888 的 /manual/ 代理访问（VitePress 5173）
+# - Ctrl+C 同时停止所有服务
 
 # 由 cmd/WSL 直接拉起 Git Bash 时不会加载 /etc/profile，PATH 里可能没有 coreutils
 for d in /usr/bin /bin /mingw64/bin; do
@@ -43,6 +44,8 @@ cd "$ROOT_DIR" || exit 1
 FRONT_URL="http://localhost:8888"
 BACK_PROBE="http://127.0.0.1:8080/"
 FRONT_PROBE="http://127.0.0.1:8888/"
+# VitePress 只监听 localhost(::1)，用 127.0.0.1 探测会一直失败
+DOCS_PROBE="http://localhost:5173/manual/"
 BACK_TIMEOUT=120
 FRONT_TIMEOUT=30
 
@@ -126,9 +129,11 @@ open_url() {
 trap 'kill 0' EXIT INT TERM
 
 # 先确保端口空闲，否则就绪探测会命中即将被关闭的旧实例
+free_port 5173 || exit 1
 free_port 8080 || exit 1
 free_port 8888 || exit 1
 
+start_pkg docs dev &
 start_pkg server start:dev:clean &
 BROWSER=none start_pkg admin-vue3 dev:clean &
 
@@ -153,7 +158,11 @@ if ! wait_http "$FRONT_PROBE" "$FRONT_TIMEOUT"; then
 fi
 echo "前端已就绪"
 
+if ! wait_http "$DOCS_PROBE" "$FRONT_TIMEOUT"; then
+  echo "文档服务 ${FRONT_TIMEOUT}s 内未就绪，首页文档入口可能不可用，请查看上方日志" >&2
+fi
+
 open_url "$FRONT_URL"
-echo "按 Ctrl+C 停止前后端"
+echo "按 Ctrl+C 停止所有服务"
 
 wait

@@ -3,13 +3,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# 安装 pnpm（使用最新版本）
-RUN npm install -g pnpm
+# 安装 pnpm（锁定主版本，避免 latest 升级后构建行为变化）
+RUN npm install -g pnpm@10
 
 # 复制 package.json 和 pnpm-lock.yaml
 COPY package.json pnpm-lock.yaml ./
 
-# 安装依赖
+# 安装依赖（依赖构建脚本白名单见 package.json 的 pnpm.onlyBuiltDependencies）
 RUN pnpm install --frozen-lockfile
 
 # 复制源代码

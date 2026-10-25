@@ -41,7 +41,7 @@ export class ToolService {
     }
 
     if (tableComment) {
-      entity.andWhere('entity.tableComment LIKE :tableComment', { tableComment: `%${tableComment}%` });
+      entity.andWhere('entity.comment LIKE :tableComment', { tableComment: `%${tableComment}%` });
     }
     const [list, total] = await entity
       .skip((pageNum - 1) * pageSize)
@@ -74,7 +74,7 @@ export class ToolService {
         businessName: tableName.slice(tableName.lastIndexOf('_') + 1), //生成业务名
         functionName: table.tableComment?.trim() || table.tableName, //生成功能名
         functionAuthor: toolConfig.author,
-        createBy: user.userName,
+        createBy: user.username,
       };
       const tableInfo = await this.genTableEntityRep.save(tableData);
 
@@ -230,7 +230,7 @@ export class ToolService {
    * @param res
    */
   async batchGenCode(table: TableName, res) {
-    const zipFilePath = path.posix.join(__dirname, 'temp.zip');
+    const zipFilePath = path.join(__dirname, 'temp.zip');
     const output = fs.createWriteStream(zipFilePath);
     const archive = archiver('zip', {
       zlib: { level: 9 },

@@ -25,9 +25,6 @@ Language : [🇺🇸](./README.md) | 🇨🇳
 
 Nest-Admin 1.0.0
 
-## 致谢
-觉得不错的话请给一个star吧，谢谢。这是作者加更的动力
-
 ## 内置功能
 
 1.  用户管理：用户是系统操作者，该功能主要完成系统用户配置。
@@ -63,6 +60,34 @@ $ git clone git@github.com:taozhi1010/nest-admin.git
 $ cd nest-admin && yarn
 ```
 
+### Docker 启动
+
+构建并启动前端:
+
+```
+cd admin-vue3
+docker build -t admin-vue3 .
+docker run -d -p 80:80 admin-vue3
+```
+
+构建并启动后端 (需要 MySQL 和 Redis):
+
+```
+cd server
+docker build -t nest-admin-server .
+docker run -d -p 8080:8080 --network host nest-admin-server
+```
+
+### Docker Compose 启动
+
+```
+# 构建并启动容器
+$ docker-compose up -d
+
+# 停止容器
+$ docker-compose down
+```
+
 ## 浏览器支持
 
 现代浏览器.
@@ -91,8 +116,8 @@ $ cd nest-admin && yarn
 
 ## 联系
 
-微信: `taozhi10100`
+微信: `taozhi1010`
 
-|                                   微信二维码                                   |
-| :----------------------------------------------------------------------------: |
+|                                 微信二维码                                 |
+| :------------------------------------------------------------------------: |
 | <img src="https://fast.dooring.cn/static/nest-admin-wechat-new.jpg" width=170> |

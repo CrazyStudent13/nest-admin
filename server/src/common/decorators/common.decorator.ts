@@ -14,6 +14,7 @@ export const ClientInfo = createParamDecorator((data: unknown, ctx: ExecutionCon
     browser: browser,
     os: os,
     loginLocation: '',
+
     dateTime: GetNowDate(),
     userName: request.user?.user?.userName,
   };

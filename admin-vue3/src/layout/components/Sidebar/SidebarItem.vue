@@ -2,7 +2,7 @@
   <div v-if="!item.hidden">
     <template v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.query)">
-        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
+        <el-menu-item :class="{ 'submenu-title-noDropdown': !isNest }" :index="resolvePath(onlyOneChild.path)">
           <svg-icon :icon-class="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" />
           <template #title>
             <span class="menu-title" :title="hasTitle(onlyOneChild.meta.title)">{{ onlyOneChild.meta.title }}</span>
@@ -17,15 +17,15 @@
         <span class="menu-title" :title="hasTitle(item.meta.title)">{{ item.meta.title }}</span>
       </template>
 
-      <sidebar-item v-for="child in item.children" :key="child.path" :is-nest="true" :item="child" :base-path="resolvePath(child.path)" class="nest-menu" />
+      <sidebar-item v-for="child in item.children" :key="child.path" :base-path="resolvePath(child.path)" class="nest-menu" :is-nest="true" :item="child" />
     </el-sub-menu>
   </div>
 </template>
 
-<script setup>
-import { isExternal } from '@/utils/validate'
+<script setup lang="ts">
+import { isExternal } from '@/composables/useValidator'
 import AppLink from './Link'
-import { getNormalPath } from '@/utils/ruoyi'
+import { getNormalPath } from '@/composables/useCommon'
 
 const props = defineProps({
   // route object
@@ -82,9 +82,9 @@ function resolvePath(routePath, routeQuery) {
   }
   if (routeQuery) {
     let query = JSON.parse(routeQuery)
-    return { path: getNormalPath(props.basePath + '/' + routePath), query: query }
+    return { path: getNormalPath(`${props.basePath}/${routePath}`), query: query }
   }
-  return getNormalPath(props.basePath + '/' + routePath)
+  return getNormalPath(`${props.basePath}/${routePath}`)
 }
 
 function hasTitle(title) {

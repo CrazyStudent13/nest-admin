@@ -11,7 +11,6 @@ import { User, UserDto } from 'src/module/system/user/user.decorator';
 
 @ApiTags('角色管理')
 @Controller('system/role')
-@ApiBearerAuth('Authorization')
 export class RoleController {
   constructor(
     private readonly roleService: RoleService,

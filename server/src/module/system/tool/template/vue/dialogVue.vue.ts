@@ -12,7 +12,7 @@ export const dialogVue = (options) => {
 const generateTemplate = ({ columns }) => {
   let html = '';
   columns.forEach((item) => {
-    if (item.isEdit === '1' && item.isPk === '0') {
+    if (item.isInsert === '1' && item.isPk === '0') {
       const comment = item.columnComment.split('(')[0];
       const field = item.javaField;
       const dictType = item.dictType;
@@ -73,7 +73,7 @@ const generateTemplate = ({ columns }) => {
           ? `
           <el-form-item label="${comment}" prop="${field}">
             <el-radio-group v-model="form.${field}">
-              <el-radio v-for="dict in ${dictType}" :key="dict.value" :label="dict.value">{{dict.label}}</el-radio>
+              <el-radio v-for="dict in ${dictType}" :key="dict.value" :value="dict.value">{{dict.label}}</el-radio>
             </el-radio-group>
           </el-form-item>
         `
@@ -164,7 +164,7 @@ const generateScriptSetup = ({ columns, BusinessName, moduleName, businessName, 
       id && getDetail(id);
     };
     const getDetail = (id) => {
-      get${BusinessName}(id).then((res) => {
+      getNotice(id).then((res) => {
           form.value = res.data
       })
     }

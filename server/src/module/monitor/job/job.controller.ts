@@ -1,13 +1,12 @@
 import { Controller, Get, Post, Body, Delete, Param, Put, Query, Req, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JobService } from './job.service';
 import { CreateJobDto, ListJobDto } from './dto/create-job.dto';
 import { RequirePermission } from 'src/common/decorators/require-premission.decorator';
 
 @ApiTags('定时任务管理')
 @Controller('monitor/job')
-@ApiBearerAuth('Authorization')
 export class JobController {
   constructor(private readonly jobService: JobService) {}
 
@@ -29,21 +28,21 @@ export class JobController {
   @ApiOperation({ summary: '创建定时任务' })
   @RequirePermission('monitor:job:add')
   add(@Body() createJobDto: CreateJobDto, @Req() req: any) {
-    return this.jobService.create(createJobDto, req.user?.userName);
+    return this.jobService.create(createJobDto, req.user?.username);
   }
 
   @Put('changeStatus')
   @ApiOperation({ summary: '修改任务状态' })
   @RequirePermission('monitor:job:changeStatus')
   changeStatus(@Body('jobId') jobId: number, @Body('status') status: string, @Req() req: any) {
-    return this.jobService.changeStatus(jobId, status, req.user?.userName);
+    return this.jobService.changeStatus(jobId, status, req.user?.username);
   }
 
   @Put('')
   @ApiOperation({ summary: '修改定时任务' })
   @RequirePermission('monitor:job:edit')
   update(@Body('jobId') jobId: number, @Body() updateJobDto: Partial<CreateJobDto>, @Req() req: any) {
-    return this.jobService.update(jobId, updateJobDto, req.user?.userName);
+    return this.jobService.update(jobId, updateJobDto, req.user?.username);
   }
 
   @Delete(':jobIds')

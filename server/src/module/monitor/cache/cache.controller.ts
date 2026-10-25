@@ -4,7 +4,6 @@ import { CacheService } from './cache.service';
 
 @ApiTags('缓存管理')
 @Controller('monitor/cache')
-@ApiBearerAuth('Authorization')
 export class CacheController {
   constructor(private readonly cacheService: CacheService) {}
   @ApiOperation({

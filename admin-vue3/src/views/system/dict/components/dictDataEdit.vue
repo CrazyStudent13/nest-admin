@@ -1,9 +1,9 @@
 <template>
   <!-- 添加或修改数据字典内容配置 -->
-  <el-dialog :title="form.title" v-model="dialogTableVisible" width="600px" append-to-body>
-    <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="100px">
+  <el-dialog v-model="dialogTableVisible" append-to-body :title="form.title" width="680px">
+    <el-form ref="formRef" v-no-enter label-width="110px" :model="form.model" :rules="form.rules">
       <el-form-item label="字典类型">
-        <el-input v-model="form.model.dictType" :disabled="true" />
+        <el-input v-model="form.model.dictType" :disabled="true" class="dict-type-input" />
       </el-form-item>
       <el-form-item label="数据标签" prop="dictLabel">
         <el-input v-model="form.model.dictLabel" placeholder="请输入数据标签" />
@@ -21,14 +21,15 @@
       </el-form-item>
       <el-form-item prop="cssClass">
         <template #label>
-          <el-tooltip effect="dark" :content="tips" placement="top-start">
-            <div class="tips">
-              <QuestionFilled class="tips-icon" :size="'14px'"/>
-            </div>
-          </el-tooltip>
-          <span style="width: 80px">样式属性</span>
+          <span class="label-with-tip">
+            <span>样式属性</span>
+            <el-tooltip :content="tips" effect="dark" placement="top">
+              <el-icon class="tip-icon">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </span>
         </template>
-
         <el-input v-model="form.model.cssClass" placeholder="请输入样式属性" />
       </el-form-item>
       <el-form-item label="状态" prop="status">
@@ -37,7 +38,7 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
-        <el-input v-model="form.model.remark" type="textarea" placeholder="请输入内容"></el-input>
+        <el-input v-model="form.model.remark" placeholder="请输入内容" type="textarea" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -51,9 +52,10 @@
 
 <script setup name="Data">
 import { addData, updateData } from '@/api/system/dict/data'
+import { useDict } from '@/composables/useDict'
+import { resetForm } from '@/composables/useForm'
 
-const { proxy } = getCurrentInstance()
-const { sys_normal_disable } = proxy.useDict('sys_normal_disable')
+const { sys_normal_disable } = useDict('sys_normal_disable')
 
 // 数据标签回显样式
 const listClassOptions = ref([
@@ -90,7 +92,7 @@ const form = reactive({
   reset: () => {
     form.loading = false
     nextTick(() => {
-      proxy.resetForm('formRef')
+      resetForm(formRef)
     })
   },
   submit: () => {
@@ -99,14 +101,14 @@ const form = reactive({
         form.loading = true
         if (form.model.dictCode != undefined) {
           updateData(form.model).then(() => {
-            proxy.$modal.msgSuccess('修改成功')
+            ElMessage.success('修改成功')
             form.reset()
             dialogTableVisible.value = false
             emit('refresh')
           })
         } else {
           addData(form.model).then(() => {
-            proxy.$modal.msgSuccess('新增成功')
+            ElMessage.success('新增成功')
             form.reset()
             dialogTableVisible.value = false
             emit('refresh')
@@ -139,3 +141,42 @@ defineExpose({
   handleDialogOpen
 })
 </script>
+
+<style scoped lang="scss">
+.dict-type-input {
+  :deep(.el-input__inner) {
+    background-color: #f5f7fa;
+    color: #606266;
+    cursor: not-allowed;
+  }
+}
+
+.label-with-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  
+  .tip-icon {
+    font-size: 14px;
+    color: #909399;
+    cursor: pointer;
+    transition: color 0.3s;
+    
+    &:hover {
+      color: #409eff;
+    }
+  }
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px 24px;
+}
+
+:deep(.el-input-number) {
+  width: 100%;
+}
+</style>

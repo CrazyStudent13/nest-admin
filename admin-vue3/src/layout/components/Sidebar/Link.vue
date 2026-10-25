@@ -1,11 +1,11 @@
 <template>
   <component :is="type" v-bind="linkProps()">
-    <slot />
+    <slot></slot>
   </component>
 </template>
 
-<script setup>
-import { isExternal } from '@/utils/validate'
+<script setup lang="ts">
+import { isExternal } from '@/composables/useValidator'
 
 const props = defineProps({
   to: {

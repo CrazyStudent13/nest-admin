@@ -6,14 +6,26 @@ import { mw as requestIpMw } from 'request-ip';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from 'src/app.module';
 import { HttpExceptionsFilter } from 'src/common/filters/http-exceptions-filter';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import path from 'path';
-import { writeFileSync } from 'fs';
+import { join } from 'path';
+import { setupApiDocs } from 'src/common/utils/api-docs';
+import { setupProcessGuards } from 'src/common/utils/process-guard';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true, // 开启跨域访问
+  });
+
+  // 配置 CORS 选项
+  app.enableCors({
+    origin: true, // 允许所有来源（开发环境）
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'istoken'],
+    exposedHeaders: ['Content-Disposition'],
+    credentials: true, // 允许携带 cookie
+    maxAge: 3600, // 预检请求缓存时间
   });
   const config = app.get(ConfigService);
   // 设置访问频率
@@ -27,16 +39,47 @@ async function bootstrap() {
   const prefix = config.get<string>('app.prefix');
 
   const rootPath = process.cwd();
-  const baseDirPath = path.posix.join(rootPath, config.get('app.file.location'));
-  app.useStaticAssets(baseDirPath, {
-    prefix: '/profile/',
-    maxAge: 86400000 * 365,
-  });
+  const baseDirPath = join(rootPath, config.get('app.file.location'));
 
-  app.useStaticAssets('public', {
-    prefix: '/public/',
-    maxAge: 0,
-  });
+  // 判断存储类型，根据类型配置不同的文件访问方式
+  const storageType = config.get<string>('app.file.storageType');
+
+  if (storageType === 'minio') {
+    // MinIO 代理配置
+    const minioDomain = config.get<string>('minio.domain');
+    app.use(
+      '/profile/',
+      createProxyMiddleware({
+        target: minioDomain,
+        changeOrigin: true,
+        pathRewrite: (path, req) => {
+          // 将 /profile/avatars/xxx.png 转换为 /avatars/xxx.png
+          return path.replace(/^\/profile\//, '/');
+        },
+      }),
+    );
+  } else if (storageType === 'rustfs') {
+    // RustFS 代理配置
+    const rustfsDomain = config.get<string>('rustfs.domain') || `http://${config.get<string>('rustfs.endPoint')}:${config.get<number>('rustfs.port')}`;
+    const rustfsBucket = config.get<string>('rustfs.bucket', 'nest-admin');
+    app.use(
+      '/profile/',
+      createProxyMiddleware({
+        target: rustfsDomain,
+        changeOrigin: true,
+        pathRewrite: (path, req) => {
+          // 将 /profile/nest-admin/xxx.png 转换为 /nest-admin/xxx.png
+          return path.replace(/^\/profile\//, '/');
+        },
+      }),
+    );
+  } else {
+    // 本地静态资源
+    app.useStaticAssets(baseDirPath, {
+      prefix: '/profile/',
+      maxAge: 0, // 头像等动态资源不缓存，确保实时更新
+    });
+  }
 
   app.setGlobalPrefix(prefix);
   // 全局验证
@@ -44,51 +87,62 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionsFilter());
 
   // web 安全，防常见漏洞
-  // 注意： 开发环境如果开启 nest static module 需要将 crossOriginResourcePolicy 设置为 false 否则 静态资源 跨域不可访问
+  // 注意：开发环境如果开启 nest static module 需要将 crossOriginResourcePolicy 设置为 false 否则静态资源 跨域不可访问
   app.use(
     helmet({
       crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
       crossOriginResourcePolicy: false,
-      contentSecurityPolicy: false, // 放开 CSP 限制
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [`'self'`],
+          styleSrc: [`'self'`, `'unsafe-inline'`, 'cdn.redoc.ly', 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
+          fontSrc: [`'self'`, 'data:', 'fonts.gstatic.com', 'cdn.redoc.ly', 'cdn.jsdelivr.net'],
+          scriptSrc: [`'self'`, `'unsafe-inline'`, 'cdn.redoc.ly', 'cdn.jsdelivr.net'],
+          imgSrc: [`'self'`, 'data:', 'cdn.redoc.ly', 'cdn.jsdelivr.net'],
+          connectSrc: [`'self'`, 'cdn.redoc.ly', 'cdn.jsdelivr.net'],
+          frameAncestors: [`'self'`, 'http://localhost:*', 'https://localhost:*'], // 允许本地任意端口嵌套
+          upgradeInsecureRequests: null,
+        },
+      },
     }),
   );
-  const swaggerOptions = new DocumentBuilder()
-    .setTitle('Nest-Admin')
-    .setDescription('Nest-Admin 接口文档')
-    .setVersion('2.0.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        in: 'header', // 认证信息放置的位置
-        name: 'Authorization', // 显式指定请求头名称
-        description: '请在请求头中携带 JWT 令牌，格式：Bearer <token>',
-      },
-      'Authorization',
-    )
-    .addServer(config.get<string>('app.file.domain'))
-    .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerOptions);
-  // 保存OpenAPI规范文件
-  writeFileSync(path.posix.join(process.cwd(), 'public', 'openApi.json'), JSON.stringify(document, null, 2));
+  // 设置 API 文档（Swagger UI + Redoc）
+  setupApiDocs(app, prefix, '#1890ff');
 
-  // 项目依赖当前文档功能，最好不要改变当前地址
-  // 生产环境使用 nginx 可以将当前文档地址 屏蔽外部访问
-  SwaggerModule.setup(`${prefix}/swagger-ui`, app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-    customSiteTitle: 'Nest-Admin API Docs',
+  // 为 Swagger UI 和 Redoc 静态资源添加 CORS 头
+  app.use('/swagger-ui*', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    next();
+  });
+
+  app.use('/docs*', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    next();
   });
 
   // 获取真实 ip
   app.use(requestIpMw({ attributeName: 'ip' }));
+  app.enableShutdownHooks();
   //服务端口
   const port = config.get<number>('app.port') || 8080;
   await app.listen(port);
 
-  console.log(`Nest-Admin 服务启动成功`, '\n', '服务地址', `http://localhost:${port}${prefix}/`, '\n', 'swagger 文档地址', `http://localhost:${port}${prefix}/swagger-ui/`);
+  console.log(
+    `\n========================================`,
+    `\n✅ Nest-Admin 服务启动成功`,
+    `\n========================================`,
+    `\n📍 服务地址：http://localhost:${port}${prefix}/`,
+    `\n📖 Swagger UI: http://localhost:${port}${prefix}/swagger-ui/`,
+    `\n📚 Redoc 文档：http://localhost:${port}${prefix}/docs`,
+    `\n🔧 Apifox 导入：http://localhost:${port}/openapi.json`,
+    `\n========================================\n`,
+  );
 }
-bootstrap();
+setupProcessGuards();
+bootstrap().catch((error) => {
+  new Logger('Bootstrap').error(`服务启动失败：${error.stack ?? error.message}`);
+  process.exit(1);
+});

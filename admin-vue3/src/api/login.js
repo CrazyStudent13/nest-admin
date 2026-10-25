@@ -1,27 +1,15 @@
-import request from '@/utils/request'
+import request from '@/composables/useRequest'
 
 // 登录方法
-export function login(userName, password, code, uuid) {
+export function login(username, password, code, uuid) {
   const data = {
-    userName,
+    username,
     password,
     code,
     uuid
   }
   return request({
     url: '/login',
-    headers: {
-      isToken: false
-    },
-    method: 'post',
-    data: data
-  })
-}
-
-// 注册方法
-export function register(data) {
-  return request({
-    url: '/register',
     headers: {
       isToken: false
     },
@@ -50,18 +38,6 @@ export function logout() {
 export function getCodeImg() {
   return request({
     url: '/captchaImage',
-    headers: {
-      isToken: false
-    },
-    method: 'get',
-    timeout: 20000
-  })
-}
-
-// 是否开启用户注册功能
-export function getRegisterUser() {
-  return request({
-    url: '/registerUser',
     headers: {
       isToken: false
     },

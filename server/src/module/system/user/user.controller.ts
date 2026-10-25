@@ -13,8 +13,8 @@ import { BusinessType } from 'src/common/constant/business.constant';
 import { Operlog } from 'src/common/decorators/operlog.decorator';
 
 @ApiTags('用户管理')
+@ApiBearerAuth()
 @Controller('system/user')
-@ApiBearerAuth('Authorization')
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -22,7 +22,7 @@ export class UserController {
   ) {}
 
   @ApiOperation({
-    summary: '个人中心-用户信息',
+    summary: '个人中心 - 用户信息',
   })
   @RequirePermission('system:user:query')
   @Get('/profile')
@@ -41,14 +41,32 @@ export class UserController {
   }
 
   @ApiOperation({
-    summary: '个人中心-上传用户头像',
+    summary: '个人中心 - 上传用户头像',
   })
   @RequirePermission('system:user:edit')
   @Post('/profile/avatar')
   @UseInterceptors(FileInterceptor('avatarfile'))
   async avatar(@UploadedFile() avatarfile: Express.Multer.File, @User() user: UserDto) {
-    const res = await this.uploadService.singleFileUpload(avatarfile);
-    return ResultData.ok({ imgUrl: res.fileName });
+    if (!avatarfile) {
+      return ResultData.fail(500, '请上传头像文件');
+    }
+    // 传递作者名（使用用户昵称或用户名）
+    const authorName = user.user.nickName || user.user.userName;
+    const res = await this.uploadService.singleFileUpload(avatarfile, 'avatar', authorName);
+
+    // 检查是否上传失败（返回的是错误信息）
+    if (res.code && res.code !== 200) {
+      return res; // 返回错误信息
+    }
+
+    // TypeScript 类型守卫：确保 res 是 UploadResult 类型
+    const uploadResult = res as any;
+    const imgUrl = uploadResult.url;
+
+    // 将头像 URL 保存到用户信息表，并传入当前 token
+    await this.userService.updateUserAvatar(user.user.userId, imgUrl, user.token);
+
+    return ResultData.ok({ imgUrl });
   }
 
   @ApiOperation({
@@ -151,10 +169,12 @@ export class UserController {
   @RequirePermission('system:user:edit')
   @Put()
   async update(@Body() updateUserDto: UpdateUserDto, @User() user: UserDto) {
-    const activeUserId = user.userId;
-    // const uuid = user.token;
-    const result = await this.userService.update(updateUserDto, activeUserId);
-    // await this.userService.updateRedisUserRolesAndPermissions(uuid, updateUserDto.userId);
+    const userId = user.user.userId;
+    const uuid = user.token;
+
+    const result = await this.userService.update(updateUserDto, userId);
+    await this.userService.updateRedisUserRolesAndPermissions(uuid, userId);
+
     return result;
   }
 
@@ -181,10 +201,25 @@ export class UserController {
     return this.userService.remove(menuIds);
   }
 
-  @ApiOperation({ summary: '导出用户信息数据为xlsx' })
+  @ApiOperation({ summary: '导出用户信息数据为 xlsx' })
   @RequirePermission('system:user:export')
   @Post('/export')
   async export(@Res() res: Response, @Body() body: ListUserDto, @User() user: UserDto): Promise<void> {
     return this.userService.export(res, body, user.user);
+  }
+
+  @ApiOperation({ summary: '导入用户信息数据从 xlsx' })
+  @RequirePermission('system:user:add')
+  @Post('/importData')
+  @UseInterceptors(FileInterceptor('file'))
+  async importData(@UploadedFile() file: Express.Multer.File, @Query('updateSupport') updateSupport: string, @User() user: UserDto) {
+    return this.userService.importData(file, updateSupport === '1', user);
+  }
+
+  @ApiOperation({ summary: '下载用户导入模板' })
+  @RequirePermission('system:user:add')
+  @Post('/downloadTemplate')
+  async downloadTemplate(@Res() res: Response): Promise<void> {
+    return this.userService.downloadTemplate(res);
   }
 }

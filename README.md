@@ -67,6 +67,34 @@ run：
 $ yarn start:dev
 ```
 
+### Docker Run
+
+Build and run the frontend:
+
+```
+cd admin-vue3
+docker build -t admin-vue3 .
+docker run -d -p 80:80 admin-vue3
+```
+
+Build and run the backend (Requires MySQL and Redis):
+
+```
+cd server
+docker build -t nest-admin-server .
+docker run -d -p 8080:8080 --network host nest-admin-server
+```
+
+### Docker Compose 
+
+```
+# Build and start the containers
+$ docker-compose up -d
+
+# Stop the containers
+$ docker-compose down
+```
+
 ## Browsers support
 
 Modern browsers.
@@ -96,7 +124,7 @@ Any type of contribution is welcome, here are some examples of how you may contr
 
 ## Concat
 
-wechat: `taozhi10100`
+wechat: `taozhi1010`
 
 |                           WeChat communication group                           |
 | :----------------------------------------------------------------------------: |

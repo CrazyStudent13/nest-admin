@@ -22,10 +22,13 @@ export class MainService {
    * @returns
    */
   async login(user: LoginDto, clientInfo: ClientInfoDto) {
+    const loginTime = new Date();
     const loginLog = {
       ...clientInfo,
+      userName: user.username,
       status: '0',
       msg: '',
+      loginTime: loginTime,
     };
     try {
       const loginLocation = await this.axiosService.getIpAddress(clientInfo.ipaddr);
@@ -34,13 +37,7 @@ export class MainService {
     const loginRes = await this.userService.login(user, loginLog);
     loginLog.status = loginRes.code === SUCCESS_CODE ? '0' : '1';
     loginLog.msg = loginRes.msg;
-
-    if (loginRes.data.userName) {
-      loginLog.userName = loginRes.data.userName;
-      delete loginRes.data.userName;
-    }
     this.loginlogService.create(loginLog);
-
     return loginRes;
   }
   /**
@@ -48,10 +45,12 @@ export class MainService {
    * @param clientInfo
    */
   async logout(clientInfo: ClientInfoDto) {
+    const loginTime = new Date();
     const loginLog = {
       ...clientInfo,
       status: '0',
       msg: '退出成功',
+      loginTime: loginTime,
     };
     try {
       const loginLocation = await this.axiosService.getIpAddress(clientInfo.ipaddr);

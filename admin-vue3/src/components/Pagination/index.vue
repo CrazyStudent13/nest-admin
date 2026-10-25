@@ -1,20 +1,10 @@
 <template>
-  <div :class="{ 'hidden': hidden }" class="pagination-container">
-    <el-pagination
-      :background="background"
-      v-model:current-page="currentPage"
-      v-model:page-size="pageSize"
-      :layout="layout"
-      :page-sizes="pageSizes"
-      :pager-count="pagerCount"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+  <div class="pagination-container" :class="{ hidden: hidden }">
+    <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :background="background" :layout="layout" :page-sizes="pageSizes" :pager-count="pagerCount" :total="total" @current-change="handleCurrentChange" @size-change="handleSizeChange" />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { scrollTo } from '@/utils/scroll-to'
 
 const props = defineProps({
@@ -36,7 +26,7 @@ const props = defineProps({
       return [10, 20, 30, 50]
     }
   },
-  // 移动端页码按钮的数量端默认值5
+  // 移动端页码按钮的数量端默认�?
   pagerCount: {
     type: Number,
     default: document.body.clientWidth < 992 ? 5 : 7
@@ -59,7 +49,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits();
+const emit = defineEmits()
 const currentPage = computed({
   get() {
     return props.page
@@ -72,7 +62,7 @@ const pageSize = computed({
   get() {
     return props.limit
   },
-  set(val){
+  set(val) {
     emit('update:limit', val)
   }
 })
@@ -91,7 +81,6 @@ function handleCurrentChange(val) {
     scrollTo(0, 800)
   }
 }
-
 </script>
 
 <style scoped>

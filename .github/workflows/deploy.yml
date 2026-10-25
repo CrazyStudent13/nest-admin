@@ -81,6 +81,8 @@ jobs:
             if [ -z "$RUSTFS_ACCESS_KEY_VALUE" ]; then
               RUSTFS_ACCESS_KEY_VALUE=$(grep -E '^RUSTFS_ACCESS_KEY=' .env 2>/dev/null | cut -d= -f2- || true)
               echo "⚠️ GitHub Secret RUSTFS_ACCESS_KEY 为空，沿用现有 .env 中的 Access Key"
+            else
+              echo "🔑 RUSTFS_ACCESS_KEY 使用 GitHub Secret 配置"
             fi
 
             # 创建或更新 .env 文件

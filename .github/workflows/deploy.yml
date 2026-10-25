@@ -2,7 +2,7 @@ name: Deploy Full Stack to Server
 
 on:
   push:
-    branches: [feature-1.0]  # 只在 feature-1.0 分支触发
+    branches: [master]  # 只在 master 分支触发
   workflow_dispatch:  # 允许手动触发
 
 jobs:

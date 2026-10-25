@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SERVER_PORT }}
-          command_timeout: 20m
+          command_timeout: 30m
           script: |
             set -e
             cd ${{ secrets.DEPLOY_PATH }}
@@ -75,6 +75,14 @@ jobs:
             echo ""
             echo "📦 开始部署..."
             
+            # RustFS Access Key 兜底：GitHub Secret 缺失/为空时沿用服务器上已有的值，
+            # 避免把可用凭据覆盖成空值导致头像等上传接口 500（RustFS 返回 403/凭据无效）
+            RUSTFS_ACCESS_KEY_VALUE="${{ secrets.RUSTFS_ACCESS_KEY }}"
+            if [ -z "$RUSTFS_ACCESS_KEY_VALUE" ]; then
+              RUSTFS_ACCESS_KEY_VALUE=$(grep -E '^RUSTFS_ACCESS_KEY=' .env 2>/dev/null | cut -d= -f2- || true)
+              echo "⚠️ GitHub Secret RUSTFS_ACCESS_KEY 为空，沿用现有 .env 中的 Access Key"
+            fi
+
             # 创建或更新 .env 文件
             cat > .env << EOF
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -88,7 +96,7 @@ jobs:
             REDIS_DB=2
             RUSTFS_ENDPOINT=${{ secrets.SERVER_HOST }}
             RUSTFS_PORT=9000
-            RUSTFS_ACCESS_KEY=${{ secrets.RUSTFS_ACCESS_KEY }}
+            RUSTFS_ACCESS_KEY=${RUSTFS_ACCESS_KEY_VALUE}
             RUSTFS_SECRET_KEY=${{ secrets.RUSTFS_SECRET_KEY }}
             RUSTFS_BUCKET=nest-admin
             JWT_SECRETKEY=${{ secrets.JWT_SECRETKEY }}

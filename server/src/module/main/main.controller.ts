@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, HttpCode, Res, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpCode, Res, Headers, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { MainService } from './main.service';
 import { RegisterDto, LoginDto } from './dto/index';
 import { createMath } from 'src/common/utils/captcha';
+import { isCaptchaRequired } from 'src/common/utils/login-captcha';
 import { ResultData } from 'src/common/utils/result';
 import { GenerateUUID } from 'src/common/utils/index';
 import { RedisService } from 'src/module/common/redis/redis.service';
@@ -66,39 +67,21 @@ export class MainController {
     summary: '获取验证图片',
   })
   @Get('/captchaImage')
-  async captchaImage(@Res() res) {
-    //是否开启验证码 - 从配置文件读取
-    const configService = new (await import('@nestjs/config')).ConfigService();
-    const captchaEnabled = configService.get('perm.router.whitelist') !== undefined;
-
-    console.log('=== 调试信息 ===');
-    console.log('configService 实例:', configService);
-    console.log('尝试读取 sys.account.captchaEnabled 配置...');
-
-    // 使用注入的 ConfigService 读取配置
-    const enable = this.configService.getConfigValue('sys.account.captchaEnabled').catch((err) => {
-      console.log('数据库查询失败，使用默认配置');
-      return 'true'; // 默认开启
-    });
-
-    const captchaEnabledValue = (await enable) === 'true';
-
-    console.log('获取到的配置值:', captchaEnabledValue);
-    console.log('================');
+  async captchaImage(@Query('username') username: string, @Res() res) {
+    // 只有该账号连续登录失败达到阈值时才需要验证码
+    const required = await isCaptchaRequired(this.configService, this.redisService, username);
 
     const data = {
-      captchaEnabled: captchaEnabledValue,
+      captchaEnabled: required,
       img: '',
       uuid: '',
     };
     try {
-      if (captchaEnabledValue) {
+      if (required) {
         const captchaInfo = createMath();
         data.img = captchaInfo.data;
         data.uuid = GenerateUUID();
-        await this.redisService.set(CacheEnum.CAPTCHA_CODE_KEY + data.uuid, captchaInfo.text.toLowerCase(), 1000 * 60 * 5).catch((err) => {
-          console.log('Redis 存储失败:', err.message);
-        });
+        await this.redisService.set(CacheEnum.CAPTCHA_CODE_KEY + data.uuid, captchaInfo.text.toLowerCase(), 1000 * 60 * 5);
       }
 
       // 设置响应头禁用缓存
@@ -109,7 +92,7 @@ export class MainController {
       return res.json(ResultData.ok(data, '操作成功'));
     } catch (err) {
       console.error('生成验证码错误:', err);
-      return ResultData.fail(500, '生成验证码错误，请重试');
+      return res.json(ResultData.fail(500, '生成验证码错误，请重试'));
     }
   }
 

@@ -35,13 +35,14 @@ export function logout() {
 }
 
 // 获取验证码
-export function getCodeImg() {
+export function getCodeImg(username) {
   return request({
     url: '/captchaImage',
     headers: {
       isToken: false
     },
     method: 'get',
+    params: { username },
     timeout: 20000
   })
 }

@@ -32,6 +32,7 @@ import { UserDto } from './user.decorator';
 import { ClientInfoDto } from 'src/common/decorators/common.decorator';
 import { Cacheable, CacheEvict } from 'src/common/decorators/redis.decorator';
 import { Captcha } from 'src/common/decorators/captcha.decorator';
+import { recordLoginFailure, clearLoginFailure } from 'src/common/utils/login-captcha';
 
 @Injectable()
 export class UserService {
@@ -351,11 +352,15 @@ export class UserService {
       },
       select: ['userId', 'password'],
     });
-    this.clearCacheByUserId(data.userId);
 
     if (!(data && bcrypt.compareSync(user.password, data.password))) {
-      return ResultData.fail(500, `帐号或密码错误`);
+      // 累计密码错误次数，达到阈值后下次登录需要验证码
+      await recordLoginFailure(this.redisService, user.username);
+      return ResultData.fail(500, `账号或密码错误`);
     }
+
+    await clearLoginFailure(this.redisService, user.username);
+    this.clearCacheByUserId(data.userId);
 
     const userData = await this.getUserinfo(data.userId);
 

@@ -4,7 +4,7 @@
   </div>
 
   <div class="login">
-    <el-form ref="loginRef" v-no-enter class="login-form" :model="loginForm.model" :rules="loginForm.rules">
+    <el-form ref="loginRef" v-no-enter class="login-form" :model="loginForm.model" :rules="loginRules" :validate-on-rule-change="false">
       <h3 class="title">nest-admin后台管理系统</h3>
       <el-form-item prop="username">
         <el-input v-model.trim="loginForm.model.username" auto-complete="off" maxlength="10" placeholder="账号" size="large" type="text">
@@ -31,14 +31,13 @@
         </div>
       </el-form-item>
 
-      <div class="login-tips">
+      <div>
         <el-checkbox v-model="loginForm.model.rememberMe" style="margin: 0px 0px 25px 0px">记住密码</el-checkbox>
       </div>
 
       <el-form-item style="width: 100%">
-        <el-button :loading="authCodeInfo.loading" size="large" style="width: 100%" type="primary" @click.prevent="handleLogin">
-          <span v-if="!authCodeInfo.loading">登 录</span>
-          <span v-else>登 录 中...</span>
+        <el-button :loading="loginLoading" size="large" style="width: 100%" type="primary" @click.prevent="handleLogin">
+          {{ loginLoading ? '登 录 中...' : '登 录' }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -51,44 +50,41 @@
 
 <script setup lang="ts">
 import useUserStore from '@/store/modules/user'
-import { authCodeInfo, getValidateCode, getUserCookie, setUserCookie } from '@/composables/useAuthCode'
+import { authCodeInfo, getValidateCode, getUserCookie, setUserCookie, loginLoading } from '@/composables/useLogin'
+import type { LoginForm } from '@/composables/useLogin'
+import type { FormInstance } from 'element-plus'
 
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
-const loginRef = ref()
+const loginRef = ref<FormInstance>()
 
-const loginForm = reactive({
+const loginForm = reactive<{ model: LoginForm }>({
   model: {
-    // TODO: 等后续开发完毕，我会删除这个配置
-    username: 'admin', // 默认登录用户
-    password: '123456', // 默认密码
+    username: '',
+    password: '',
     rememberMe: false,
     code: '',
     uuid: ''
-  },
-  rules: {
-    username: [{ required: true, trigger: 'blur', message: '请输入您的账号' }],
-    password: [{ required: true, trigger: 'blur', message: '请输入您的密码' }],
-    code: [{ required: true, trigger: 'change', message: '请输入验证码' }]
   }
 })
 
-const redirect = ref(undefined)
+// 只有后端要求验证码时才校验
+const loginRules = computed(() => ({
+  username: [{ required: true, trigger: 'blur', message: '请输入您的账号' }],
+  password: [{ required: true, trigger: 'blur', message: '请输入您的密码' }],
+  ...(authCodeInfo.captchaEnabled ? { code: [{ required: true, trigger: 'change', message: '请输入验证码' }] } : {})
+}))
 
-watch(
-  route,
-  (newRoute) => {
-    redirect.value = newRoute.query && newRoute.query.redirect
-  },
-  { immediate: true }
-)
+// 登录成功后的跳转地址
+const redirect = computed(() => (route.query.redirect as string) || '/')
 
-// 创建防抖的登录处理函数
-const debouncedHandleLogin = useDebounce(() => {
-  loginRef.value.validate((valid) => {
+// 登录处理（防抖防止连点，loading 防止请求期间回车重复提交）
+const handleLogin = useDebounce(() => {
+  if (loginLoading.value) return
+  loginRef.value?.validate((valid) => {
     if (valid) {
-      authCodeInfo.loading = true
+      loginLoading.value = true
       loginForm.model.uuid = authCodeInfo.uuid
       // 勾选了需要记住密码设置在 cookie 中设置记住用户名和密码，否则移除
       setUserCookie(loginForm.model)
@@ -97,39 +93,40 @@ const debouncedHandleLogin = useDebounce(() => {
       userStore
         .login(loginForm.model)
         .then(() => {
-          router.push({ path: redirect.value || '/' })
+          router.push({ path: redirect.value })
         })
         .catch(() => {
-          // 重新获取验证码
-          if (authCodeInfo.captchaEnabled) {
-            getValidateCode(loginForm.model, true)
-          }
+          // 登录失败后重新判断：连续失败达到阈值时会开始显示验证码
+          getValidateCode(loginForm.model)
         })
         .finally(() => {
-          authCodeInfo.loading = false
+          loginLoading.value = false
         })
     }
   })
 }, 500)
 
-// 创建防抖的验证码刷新函数
-const debouncedHandleRefreshCaptcha = useDebounce(() => {
+// 刷新验证码（防抖）
+const handleRefreshCaptcha = useDebounce(() => {
   getValidateCode(loginForm.model, true)
 }, 1000)
 
-function handleLogin() {
-  debouncedHandleLogin()
-}
+// 切换账号时重新判断该账号是否需要验证码
+const debouncedCheckCaptcha = useDebounce(() => {
+  getValidateCode(loginForm.model)
+}, 500)
 
-// 刷新验证码
-function handleRefreshCaptcha() {
-  debouncedHandleRefreshCaptcha()
-}
+watch(
+  () => loginForm.model.username,
+  () => {
+    if (loginForm.model.username) debouncedCheckCaptcha()
+  }
+)
 
-// 初始化时获取验证码和从cookie中恢复用户信息
-getValidateCode(loginForm.model, false)
+// 先从cookie恢复用户信息，再按该账号的失败次数判断是否需要验证码
 const userData = getUserCookie(loginForm.model)
 Object.assign(loginForm.model, userData)
+getValidateCode(loginForm.model)
 </script>
 
 <style lang="scss" scoped>
@@ -152,7 +149,7 @@ Object.assign(loginForm.model, userData)
 .login-form {
   border-radius: 6px;
   background: #ffffff;
-  width: 400px;
+  width: 360px;
   padding: 25px 25px 5px 25px;
 
   .input-icon {
@@ -183,14 +180,5 @@ Object.assign(loginForm.model, userData)
   font-family: Arial;
   font-size: 12px;
   letter-spacing: 1px;
-}
-
-.login-tips {
-  &-link {
-    position: relative;
-    top: -3px;
-    left: 10px;
-    font-size: 13px;
-  }
 }
 </style>

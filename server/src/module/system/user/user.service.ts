@@ -555,7 +555,8 @@ export class UserService {
     }
     user['userName'] = user.username;
     user['nickName'] = user.username;
-    await this.userRepo.save({ ...user, loginDate });
+    user['password'] = bcrypt.hashSync(user.password, bcrypt.genSaltSync(10));
+    await this.userRepo.save({ ...user, userType: SYS_USER_TYPE.CUSTOM, loginDate });
     return ResultData.ok();
   }
 

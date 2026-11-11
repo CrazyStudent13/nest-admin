@@ -34,6 +34,22 @@ export function logout() {
   })
 }
 
+// 注册方法
+export function register(username, password) {
+  const data = {
+    username,
+    password
+  }
+  return request({
+    url: '/register',
+    headers: {
+      isToken: false
+    },
+    method: 'post',
+    data: data
+  })
+}
+
 // 获取验证码
 export function getCodeImg(username) {
   return request({

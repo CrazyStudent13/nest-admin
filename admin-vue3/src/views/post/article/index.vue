@@ -1,6 +1,6 @@
 <template>
   <div class="app-container article">
-    <el-card v-loading="loading" class="article-subject" shadow="never">
+    <el-card v-loading="loading" class="article-subject fill-card" shadow="never">
       <div class="article-subject-header">
         <el-input v-model="subject.query.title" class="search-input" placeholder="请输入专栏名称筛选" clearable @keyup.enter="subject.handleSearch" @blur="subject.handleSearchBlur" />
       </div>
@@ -47,7 +47,7 @@
       </div>
     </el-card>
 
-    <el-card v-loading="loading" class="article-table" shadow="never">
+    <el-card v-loading="loading" class="article-table fill-card" shadow="never">
       <!-- 专栏信息描述（仅在选择专栏时显示） -->
       <el-descriptions v-if="subject.state.selectNode.id && subject.state.selectNode.id !== 0" border :column="4">
         <el-descriptions-item label="专栏名称">{{ subject.state.selectNode.title }}</el-descriptions-item>
@@ -346,10 +346,11 @@ const handleArticleSuccess = () => {
   &-subject {
     background-color: #ffffff;
     width: 300px;
-    height: calc(100vh - 200px);
+    // 高度与内部滚动由全局 .fill-card 统一处理
     margin-right: 20px;
 
     &-header {
+      flex-shrink: 0;
       margin-bottom: 10px;
 
       .search-input {
@@ -358,8 +359,11 @@ const handleArticleSuccess = () => {
     }
 
     &-body {
-      height: calc(100vh - 320px);
+      // 占满卡片剩余空间，独立滚动
+      flex: 1;
+      min-height: 0;
       padding-right: 0;
+      overflow-y: auto;
     }
   }
 
@@ -421,7 +425,6 @@ const handleArticleSuccess = () => {
   &-table {
     position: relative;
     width: calc(100% - 300px);
-    height: calc(100vh - 200px);
   }
 }
 

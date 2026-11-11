@@ -7,7 +7,7 @@
     <el-form ref="loginRef" v-no-enter class="login-form" :model="loginForm.model" :rules="loginRules" :validate-on-rule-change="false">
       <h3 class="title">nest-admin后台管理系统</h3>
       <el-form-item prop="username">
-        <el-input v-model.trim="loginForm.model.username" auto-complete="off" maxlength="10" placeholder="账号" size="large" type="text">
+        <el-input v-model.trim="loginForm.model.username" auto-complete="off" maxlength="50" placeholder="账号" size="large" type="text">
           <template #prefix>
             <user class="input-icon" />
           </template>
@@ -31,8 +31,9 @@
         </div>
       </el-form-item>
 
-      <div>
+      <div class="login-options">
         <el-checkbox v-model="loginForm.model.rememberMe" style="margin: 0px 0px 25px 0px">记住密码</el-checkbox>
+        <el-link type="primary" style="margin: 0px 0px 25px 0px" @click="router.push('/register')">注册</el-link>
       </div>
 
       <el-form-item style="width: 100%">
@@ -167,6 +168,12 @@ getValidateCode(loginForm.model)
   .el-input {
     flex: 1;
   }
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .el-login-footer {

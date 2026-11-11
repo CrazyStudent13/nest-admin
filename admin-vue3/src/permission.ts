@@ -14,7 +14,7 @@ import { ElMessage } from 'element-plus'
 
 NProgress.configure({ showSpinner: false })
 
-const whiteList: string[] = ['/login']
+const whiteList: string[] = ['/login', '/register']
 
 // 记录当前正在导航的目标路径
 let navigatingToPath: string | null = null
@@ -27,7 +27,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
   if (getToken()) {
     to.meta.title && useSettingsStore().setTitle(to.meta.title as string)
     /* has token*/
-    if (to.path === '/login') {
+    if (to.path === '/login' || to.path === '/register') {
       next({ path: '/' })
       NProgress.done()
       setRouteLoading(false)

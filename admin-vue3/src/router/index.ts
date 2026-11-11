@@ -62,6 +62,11 @@ export const constantRoutes: AppRouteRecordRaw[] = [
     hidden: true
   },
   {
+    path: '/register',
+    component: () => import('@/views/register.vue'),
+    hidden: true
+  },
+  {
     path: '/post/article-editor',
     component: () => import('@/views/post/article/editor.vue'),
     hidden: true,

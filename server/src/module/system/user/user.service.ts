@@ -1,4 +1,4 @@
-import { Repository, In, Not } from 'typeorm';
+import { Repository, In, Not, DataSource } from 'typeorm';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -52,6 +52,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
+    private readonly dataSource: DataSource,
   ) {}
   /**
    * 后台创建用户
@@ -79,7 +80,17 @@ export class UserService {
 
     let res;
     try {
-      res = await this.userRepo.save({ ...createUserDto, userType: SYS_USER_TYPE.CUSTOM });
+      // 用户与岗位/角色关联写入打包为事务，任一步失败整体回滚
+      res = await this.dataSource.transaction(async (manager) => {
+        const user = await manager.save(UserEntity, { ...createUserDto, userType: SYS_USER_TYPE.CUSTOM });
+        if (createUserDto.postIds?.length) {
+          await manager.insert(SysUserWithPostEntity, createUserDto.postIds.map((id) => ({ userId: user.userId, postId: id })));
+        }
+        if (createUserDto.roleIds?.length) {
+          await manager.insert(SysUserWithRoleEntity, createUserDto.roleIds.map((id) => ({ userId: user.userId, roleId: id })));
+        }
+        return user;
+      });
     } catch (error) {
       // 并发新增撞车时前置查重拦不住，靠 user_name 唯一索引兜底（ER_DUP_ENTRY）
       if (error?.code === 'ER_DUP_ENTRY') {
@@ -87,23 +98,6 @@ export class UserService {
       }
       throw error;
     }
-    const postEntity = this.sysUserWithPostEntityRep.createQueryBuilder('postEntity');
-    const postValues = createUserDto.postIds.map((id) => {
-      return {
-        userId: res.userId,
-        postId: id,
-      };
-    });
-    postEntity.insert().values(postValues).execute();
-
-    const roleEntity = this.sysUserWithRoleEntityRep.createQueryBuilder('roleEntity');
-    const roleValues = createUserDto.roleIds.map((id) => {
-      return {
-        userId: res.userId,
-        roleId: id,
-      };
-    });
-    roleEntity.insert().values(roleValues).execute();
 
     return ResultData.ok();
   }
@@ -272,67 +266,47 @@ export class UserService {
       delete updateUserDto.status;
     }
 
-    if (updateUserDto?.postIds !== undefined) {
-      //用户已有岗位，先删除所有关联岗位
-      const hasPostId = await this.sysUserWithPostEntityRep.findOne({
-        where: {
-          userId: updateUserDto.userId,
-        },
-        select: ['postId'],
-      });
-
-      if (hasPostId) {
-        await this.sysUserWithPostEntityRep.delete({
+    // 岗位/角色关联的"先删后插"与用户信息更新打包为事务，任一步失败整体回滚
+    // （原实现散装多表写入且插入漏 await，中断时会留下删了旧关联但没插新关联的半成品）
+    const data = await this.dataSource.transaction(async (manager) => {
+      if (updateUserDto?.postIds !== undefined) {
+        //用户已有岗位，先删除所有关联岗位
+        await manager.delete(SysUserWithPostEntity, {
           userId: updateUserDto.userId,
         });
+        // 只有当 postIds 不为空时才插入新记录
+        if (updateUserDto.postIds && updateUserDto.postIds.length > 0) {
+          await manager.insert(
+            SysUserWithPostEntity,
+            updateUserDto.postIds.map((id) => ({ userId: updateUserDto.userId, postId: id })),
+          );
+        }
       }
-      // 只有当 postIds 不为空时才插入新记录
-      if (updateUserDto.postIds && updateUserDto.postIds.length > 0) {
-        const postEntity = this.sysUserWithPostEntityRep.createQueryBuilder('postEntity');
-        const postValues = updateUserDto.postIds.map((id) => {
-          return {
-            userId: updateUserDto.userId,
-            postId: id,
-          };
-        });
-        postEntity.insert().values(postValues).execute();
-      }
-    }
 
-    if (updateUserDto?.roleIds !== undefined) {
-      //用户已有角色，先删除所有关联角色
-      const hasRoletId = await this.sysUserWithRoleEntityRep.findOne({
-        where: {
-          userId: updateUserDto.userId,
-        },
-        select: ['roleId'],
-      });
-      if (hasRoletId) {
-        await this.sysUserWithRoleEntityRep.delete({
+      if (updateUserDto?.roleIds !== undefined) {
+        //用户已有角色，先删除所有关联角色
+        await manager.delete(SysUserWithRoleEntity, {
           userId: updateUserDto.userId,
         });
+        // 只有当 roleIds 不为空时才插入新记录
+        if (updateUserDto.roleIds && updateUserDto.roleIds.length > 0) {
+          await manager.insert(
+            SysUserWithRoleEntity,
+            updateUserDto.roleIds.map((id) => ({ userId: updateUserDto.userId, roleId: id })),
+          );
+        }
       }
-      // 只有当 roleIds 不为空时才插入新记录
-      if (updateUserDto.roleIds && updateUserDto.roleIds.length > 0) {
-        const roleEntity = this.sysUserWithRoleEntityRep.createQueryBuilder('roleEntity');
-        const roleValues = updateUserDto.roleIds.map((id) => {
-          return {
-            userId: updateUserDto.userId,
-            roleId: id,
-          };
-        });
-        roleEntity.insert().values(roleValues).execute();
-      }
-    }
 
-    delete updateUserDto.password;
-    delete (updateUserDto as any).dept;
-    delete (updateUserDto as any).roles;
-    delete (updateUserDto as any).roleIds;
-    delete (updateUserDto as any).postIds;
+      const dto = { ...updateUserDto };
+      delete dto.password;
+      delete (dto as any).dept;
+      delete (dto as any).roles;
+      delete (dto as any).roleIds;
+      delete (dto as any).postIds;
 
-    //更新用户信息
-    const data = await this.userRepo.update({ userId: updateUserDto.userId }, updateUserDto);
+      //更新用户信息
+      return await manager.update(UserEntity, { userId: updateUserDto.userId }, dto);
+    });
     return ResultData.ok(data);
   }
 
@@ -743,26 +717,17 @@ export class UserService {
   async updateAuthRole(query) {
     const roleIds = query.roleIds.split(',');
     if (roleIds?.length > 0) {
-      //用户已有角色,先删除所有关联角色
-      const hasRoletId = await this.sysUserWithRoleEntityRep.findOne({
-        where: {
-          userId: query.userId,
-        },
-        select: ['roleId'],
-      });
-      if (hasRoletId) {
-        await this.sysUserWithRoleEntityRep.delete({
+      // 角色关联"先删后插"打包为事务，任一步失败整体回滚
+      await this.dataSource.transaction(async (manager) => {
+        //用户已有角色,先删除所有关联角色
+        await manager.delete(SysUserWithRoleEntity, {
           userId: query.userId,
         });
-      }
-      const roleEntity = this.sysUserWithRoleEntityRep.createQueryBuilder('roleEntity');
-      const roleValues = roleIds.map((id) => {
-        return {
-          userId: query.userId,
-          roleId: id,
-        };
+        await manager.insert(
+          SysUserWithRoleEntity,
+          roleIds.map((id) => ({ userId: query.userId, roleId: id })),
+        );
       });
-      roleEntity.insert().values(roleValues).execute();
     }
 
     // 清除用户菜单缓存

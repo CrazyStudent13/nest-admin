@@ -35,6 +35,10 @@ export class UploadController {
     const authorName = user?.user?.nickName || user?.user?.userName;
 
     const res = await this.uploadService.singleFileUpload(file, customPath, authorName);
+    // 服务层校验失败（如超限）时返回的是失败信封，直接透传，避免 ok() 把失败包进外层成功
+    if (res?.code && res.code !== 200) {
+      return res;
+    }
     return ResultData.ok(res);
   }
 

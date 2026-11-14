@@ -281,8 +281,10 @@ export class UploadService {
     if (!originalname) {
       return originalname;
     }
+    // 先剥离任何目录成分，再把白名单外字符（含空格、控制符等）替换为下划线，阻断恶意文件名穿越落盘
+    const baseName = path.basename(originalname).replace(/[^\w\u4e00-\u9fa5.-]+/g, '_');
     // 只取文件名部分，不包含扩展名
-    const nameParts = originalname.split('.');
+    const nameParts = baseName.split('.');
     if (nameParts.length > 1) {
       nameParts.pop(); // 移除扩展名
     }

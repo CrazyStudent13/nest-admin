@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as Minio from 'minio';
+import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
 import { IFileStorage, UploadResult } from './interfaces/file-storage.interface';
 import Mime from 'mime-types';
@@ -137,6 +138,9 @@ export class MinioFileStorage implements IFileStorage, OnModuleInit {
     if (!originalname) {
       return originalname;
     }
+
+    // 剥离目录成分并消毒：仅保留字母数字、下划线、中文、中划线、点，阻断恶意文件名穿越落盘
+    originalname = path.basename(originalname).replace(/[^\w\u4e00-\u9fa5.-]+/g, '_');
 
     // 分离文件名和扩展名
     const lastDotIndex = originalname.lastIndexOf('.');

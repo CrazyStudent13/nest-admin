@@ -77,7 +77,16 @@ export class UserService {
       createUserDto.password = await bcrypt.hashSync(createUserDto.password, salt);
     }
 
-    const res = await this.userRepo.save({ ...createUserDto, userType: SYS_USER_TYPE.CUSTOM });
+    let res;
+    try {
+      res = await this.userRepo.save({ ...createUserDto, userType: SYS_USER_TYPE.CUSTOM });
+    } catch (error) {
+      // 并发新增撞车时前置查重拦不住，靠 user_name 唯一索引兜底（ER_DUP_ENTRY）
+      if (error?.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException(`新增用户'${createUserDto.userName}'失败，登录账号已存在`);
+      }
+      throw error;
+    }
     const postEntity = this.sysUserWithPostEntityRep.createQueryBuilder('postEntity');
     const postValues = createUserDto.postIds.map((id) => {
       return {
@@ -562,7 +571,15 @@ export class UserService {
     user['userName'] = user.username;
     user['nickName'] = user.username;
     user['password'] = bcrypt.hashSync(user.password, bcrypt.genSaltSync(10));
-    await this.userRepo.save({ ...user, userType: SYS_USER_TYPE.CUSTOM, loginDate });
+    try {
+      await this.userRepo.save({ ...user, userType: SYS_USER_TYPE.CUSTOM, loginDate });
+    } catch (error) {
+      // 并发注册撞车时前置查重拦不住，靠 user_name 唯一索引兜底（ER_DUP_ENTRY）
+      if (error?.code === 'ER_DUP_ENTRY') {
+        return ResultData.fail(500, `保存用户'${user.username}'失败，注册账号已存在`);
+      }
+      throw error;
+    }
     return ResultData.ok();
   }
 

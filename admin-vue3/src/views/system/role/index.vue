@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="main-card">
-      <el-form v-show="role.showSearch" ref="role.queryRef" v-no-enter :inline="true" label-width="68px" :model="role.queryParams">
+      <el-form v-show="role.showSearch" ref="queryRef" v-no-enter :inline="true" label-width="68px" :model="role.queryParams">
       <el-form-item label="角色名称" prop="roleName">
         <el-input v-model.trim="role.queryParams.roleName" clearable placeholder="请输入角色名称" style="width: 240px" @keyup.enter="role.handleQuery" />
       </el-form-item>
@@ -174,11 +174,11 @@ const roleRef = ref(null)
 const menuRef = ref(null)
 const deptRef = ref(null)
 const authUserRef = ref(null)
+const queryRef = ref(null)
 
 // ==================== 角色管理（集中式管理） ====================
 const role = reactive({
   // 响应式数据
-  queryRef: null,
   roleList: [],
   open: false,
   loading: true,
@@ -281,7 +281,7 @@ const role = reactive({
   // 重置按钮操作
   resetQuery: () => {
     role.dateRange = []
-    resetForm(role.queryRef)
+    resetForm(queryRef.value)
     role.handleQuery()
   },
 

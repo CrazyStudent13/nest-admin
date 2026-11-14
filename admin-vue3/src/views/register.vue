@@ -19,6 +19,14 @@
             <lock class="input-icon" />
           </template>
         </el-input>
+        <div v-if="registerForm.password" class="pwd-strength">
+          <div class="pwd-strength-bars">
+            <span :class="{ active: pwdStrength >= 1 }"></span>
+            <span :class="{ active: pwdStrength >= 2 }"></span>
+            <span :class="{ active: pwdStrength >= 3 }"></span>
+          </div>
+          <span class="pwd-strength-text" :class="`level-${pwdStrength}`">{{ pwdStrengthLabel }}</span>
+        </div>
       </el-form-item>
       <el-form-item prop="confirmPassword">
         <el-input v-model="registerForm.confirmPassword" auto-complete="new-password" maxlength="20" placeholder="确认密码" size="large" type="password" show-password @keyup.enter="handleRegister">
@@ -46,7 +54,7 @@
 
 <script setup lang="ts">
 import { register } from '@/api/login'
-import { createAccountExistsValidator } from '@/composables/auth/useAccountCheck'
+import { createRegisterRules, computePasswordStrength } from '@/composables/auth/useRegisterCheck'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 
@@ -70,30 +78,13 @@ watch(
   }
 )
 
-const registerRules = {
-  username: [
-    { required: true, trigger: 'blur', message: '请输入您的账号' },
-    { min: 2, max: 50, trigger: 'blur', message: '账号长度必须为 2 到 50 个字符' },
-    createAccountExistsValidator()
-  ],
-  password: [
-    { required: true, trigger: 'blur', message: '请输入您的密码' },
-    { min: 5, max: 20, trigger: 'blur', message: '密码长度必须为 5 到 20 个字符' }
-  ],
-  confirmPassword: [
-    { required: true, trigger: 'blur', message: '请再次输入您的密码' },
-    {
-      validator: (_rule: any, value: string, callback: (error?: Error) => void) => {
-        if (value !== registerForm.password) {
-          callback(new Error('两次输入的密码不一致'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ]
-}
+// 注册校验规则统一由 useRegisterCheck 维护（账号占用 + 密码强度 + 两次一致）
+const registerRules = createRegisterRules(registerForm)
+
+// 密码强度提示条：0=未输入 1=弱 2=中 3=强
+const pwdStrength = computed(() => computePasswordStrength(registerForm.password))
+const STRENGTH_LABELS = ['', '弱', '中', '强'] as const
+const pwdStrengthLabel = computed(() => STRENGTH_LABELS[pwdStrength.value])
 
 // 注册处理（防抖防止连点，loading 防止请求期间回车重复提交）
 const handleRegister = useDebounce(() => {
@@ -150,6 +141,57 @@ const handleRegister = useDebounce(() => {
   .go-login {
     margin: 0px 0px 15px 0px;
     text-align: right;
+  }
+
+  .pwd-strength {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+
+    .pwd-strength-bars {
+      flex: 1;
+      display: flex;
+      gap: 4px;
+
+      span {
+        height: 4px;
+        flex: 1;
+        border-radius: 2px;
+        background: #e4e7ed;
+        transition: background-color 0.3s;
+
+        &:nth-child(1).active {
+          background: #f56c6c;
+        }
+
+        &:nth-child(2).active {
+          background: #e6a23c;
+        }
+
+        &:nth-child(3).active {
+          background: #67c23a;
+        }
+      }
+    }
+
+    .pwd-strength-text {
+      font-size: 12px;
+      color: #909399;
+
+      &.level-1 {
+        color: #f56c6c;
+      }
+
+      &.level-2 {
+        color: #e6a23c;
+      }
+
+      &.level-3 {
+        color: #67c23a;
+      }
+    }
   }
 }
 

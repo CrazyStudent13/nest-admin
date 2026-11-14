@@ -50,6 +50,18 @@ export function register(username, password) {
   })
 }
 
+// 检查账号是否已被注册
+export function checkUsername(username) {
+  return request({
+    url: '/register/check',
+    headers: {
+      isToken: false
+    },
+    method: 'get',
+    params: { username }
+  })
+}
+
 // 获取验证码
 export function getCodeImg(username) {
   return request({

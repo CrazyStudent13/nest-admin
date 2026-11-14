@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { register } from '@/api/login'
+import { createAccountExistsValidator } from '@/composables/auth/useAccountCheck'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 
@@ -72,7 +73,8 @@ watch(
 const registerRules = {
   username: [
     { required: true, trigger: 'blur', message: '请输入您的账号' },
-    { min: 2, max: 50, trigger: 'blur', message: '账号长度必须为 2 到 50 个字符' }
+    { min: 2, max: 50, trigger: 'blur', message: '账号长度必须为 2 到 50 个字符' },
+    createAccountExistsValidator()
   ],
   password: [
     { required: true, trigger: 'blur', message: '请输入您的密码' },
@@ -102,7 +104,8 @@ const handleRegister = useDebounce(() => {
       register(registerForm.username, registerForm.password)
         .then(() => {
           ElMessage.success('注册成功')
-          router.push('/login')
+          // 跳转登录页并带上账号，由登录页读取 query 预填
+          router.push({ path: '/login', query: { username: registerForm.username } })
         })
         .catch(() => {
           // 失败提示由请求拦截器统一展示（如"注册账号已存在"）

@@ -69,6 +69,15 @@ export class MainService {
   }
 
   /**
+   * 检查账号是否已被注册
+   * @param username
+   * @returns
+   */
+  async checkUsername(username: string) {
+    return await this.userService.checkUsername(username);
+  }
+
+  /**
    * 登陆记录
    */
   loginRecord() {}

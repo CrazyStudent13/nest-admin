@@ -561,6 +561,17 @@ export class UserService {
   }
 
   /**
+   * 检查账号是否已被注册（注册页实时校验用，注册提交时后端仍会兜底校验）
+   */
+  async checkUsername(username: string) {
+    const exist = await this.userRepo.findOne({
+      where: { userName: username },
+      select: ['userId'],
+    });
+    return ResultData.ok({ exists: !!exist });
+  }
+
+  /**
    * 从数据声明生成令牌
    *
    * @param payload 数据声明

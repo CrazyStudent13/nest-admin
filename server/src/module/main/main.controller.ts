@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, HttpCode, Res, Headers, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { MainService } from './main.service';
 import { RegisterDto, LoginDto } from './dto/index';
 import { createMath } from 'src/common/utils/captcha';
@@ -61,6 +61,24 @@ export class MainController {
   @HttpCode(200)
   register(@Body() user: RegisterDto) {
     return this.mainService.register(user);
+  }
+
+  @ApiOperation({
+    summary: '检查账号是否已被注册',
+  })
+  @ApiQuery({
+    name: 'username',
+    required: true,
+    description: '账号，2-50 个字符',
+  })
+  @NotRequireAuth()
+  @Get('/register/check')
+  async checkUsername(@Query('username') username: string) {
+    const name = (username || '').trim();
+    if (name.length < 2 || name.length > 50) {
+      return ResultData.fail(400, '账号长度必须为 2 到 50 个字符');
+    }
+    return await this.mainService.checkUsername(name);
   }
 
   @ApiOperation({

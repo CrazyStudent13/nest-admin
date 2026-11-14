@@ -35,6 +35,16 @@
           </template>
         </el-input>
       </el-form-item>
+      <el-form-item prop="code">
+        <div class="code-input-container">
+          <el-input v-model.trim="registerForm.code" auto-complete="off" maxlength="3" placeholder="验证码" size="large" style="width: 63%" @keyup.enter="handleRegister">
+            <template #prefix>
+              <svg-icon class="input-icon" icon-class="validCode" />
+            </template>
+          </el-input>
+          <captcha-code :img-url="authCodeInfo.imgUrl" :refreshing="authCodeInfo.refreshing" size="large" @refresh="handleRefreshCaptcha" />
+        </div>
+      </el-form-item>
 
       <el-form-item style="width: 100%">
         <el-button :loading="registerLoading" size="large" style="width: 100%" type="primary" @click.prevent="handleRegister">
@@ -54,6 +64,7 @@
 
 <script setup lang="ts">
 import { register } from '@/api/login'
+import { authCodeInfo, getValidateCode } from '@/composables/auth/useLogin'
 import { createRegisterRules, computePasswordStrength } from '@/composables/auth/useRegisterCheck'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -65,7 +76,9 @@ const registerLoading = ref(false)
 const registerForm = reactive({
   username: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  code: '',
+  uuid: ''
 })
 
 // 密码变化时重新校验确认密码，避免陈旧的"两次密码不一致"提示残留
@@ -92,14 +105,16 @@ const handleRegister = useDebounce(() => {
   registerRef.value?.validate((valid) => {
     if (valid) {
       registerLoading.value = true
-      register(registerForm.username, registerForm.password)
+      registerForm.uuid = authCodeInfo.uuid
+      register(registerForm.username, registerForm.password, registerForm.code, registerForm.uuid)
         .then(() => {
           ElMessage.success('注册成功')
           // 跳转登录页并带上账号，由登录页读取 query 预填
           router.push({ path: '/login', query: { username: registerForm.username } })
         })
         .catch(() => {
-          // 失败提示由请求拦截器统一展示（如"注册账号已存在"）
+          // 失败提示由请求拦截器统一展示（如"注册账号已存在"），验证码作废需刷新
+          getValidateCode(registerForm, true, 'register')
         })
         .finally(() => {
           registerLoading.value = false
@@ -107,6 +122,14 @@ const handleRegister = useDebounce(() => {
     }
   })
 }, 500)
+
+// 刷新验证码（防抖）
+const handleRefreshCaptcha = useDebounce(() => {
+  getValidateCode(registerForm, true, 'register')
+}, 1000)
+
+// 注册验证码与账号无关，进入页面即获取
+getValidateCode(registerForm, false, 'register')
 </script>
 
 <style lang="scss" scoped>
@@ -141,6 +164,16 @@ const handleRegister = useDebounce(() => {
   .go-login {
     margin: 0px 0px 15px 0px;
     text-align: right;
+  }
+
+  .code-input-container {
+    display: flex;
+    gap: 2%; // 输入框和验证码之间的间距
+    align-items: center; // 垂直居中对齐
+
+    .el-input {
+      flex: 1;
+    }
   }
 
   .pwd-strength {

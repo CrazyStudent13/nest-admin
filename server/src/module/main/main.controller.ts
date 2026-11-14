@@ -59,8 +59,8 @@ export class MainController {
   })
   @Post('/register')
   @HttpCode(200)
-  register(@Body() user: RegisterDto) {
-    return this.mainService.register(user);
+  register(@Body() user: RegisterDto, @ClientInfo() clientInfo: ClientInfoDto) {
+    return this.mainService.register(user, clientInfo.ipaddr);
   }
 
   @ApiOperation({
@@ -85,9 +85,9 @@ export class MainController {
     summary: '获取验证图片',
   })
   @Get('/captchaImage')
-  async captchaImage(@Query('username') username: string, @Res() res) {
-    // 只有该账号连续登录失败达到阈值时才需要验证码
-    const required = await isCaptchaRequired(this.configService, this.redisService, username);
+  async captchaImage(@Query('username') username: string, @Query('type') type: string, @Res() res) {
+    // type=register：注册验证码无条件生成；默认登录场景按账号失败次数动态判断
+    const required = type === 'register' ? true : await isCaptchaRequired(this.configService, this.redisService, username);
 
     const data = {
       captchaEnabled: required,

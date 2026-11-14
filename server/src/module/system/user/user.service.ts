@@ -10,7 +10,7 @@ import { ExportTable } from 'src/common/utils/export';
 import * as ExcelJS from 'exceljs';
 
 import { CacheEnum, DelFlagEnum, StatusEnum, DataScopeEnum } from 'src/common/enum/index';
-import { LOGIN_TOKEN_EXPIRESIN, SYS_USER_TYPE } from 'src/common/constant/index';
+import { LOGIN_TOKEN_EXPIRESIN, REGISTER_IP_LIMIT, REGISTER_RATE_EXPIRESIN, SYS_USER_TYPE } from 'src/common/constant/index';
 import { ResultData } from 'src/common/utils/result';
 import { CreateUserDto, UpdateUserDto, ListUserDto, ChangeStatusDto, ResetPwdDto, AllocatedListDto, UpdateProfileDto, UpdatePwdDto, ImportUserDto } from './dto/index';
 import { RegisterDto, LoginDto } from '../../main/dto/index';
@@ -542,8 +542,14 @@ export class UserService {
   /**
    * 注册
    */
-  async register(user: RegisterDto) {
+  @Captcha('user', 'always')
+  async register(user: RegisterDto, ipaddr: string) {
     const loginDate = GetNowDate();
+    // IP 注册频率限制：同一 IP 每小时最多 REGISTER_IP_LIMIT 次（含验证码失败的尝试）
+    const rateCount = await this.redisService.incr(CacheEnum.REGISTER_RATE_KEY + ipaddr, REGISTER_RATE_EXPIRESIN);
+    if (rateCount > REGISTER_IP_LIMIT) {
+      return ResultData.fail(429, '注册过于频繁，请稍后再试');
+    }
     const checkUserNameUnique = await this.userRepo.findOne({
       where: {
         userName: user.username,

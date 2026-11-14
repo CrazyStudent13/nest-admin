@@ -60,12 +60,19 @@ export const authCodeInfo = reactive<AuthCodeInfo>({
 let fetching = false
 
 /**
- * 按账号查询是否需要验证码，需要时同时返回图片
+ * 获取验证码
+ * @param form 表单模型（读取 username，成功后清空 code）
  * @param isClick 是否用户手动点击刷新
+ * @param captchaType 验证码用途：login=按账号失败次数动态判断；register=注册验证码，无条件获取（不依赖账号）
  */
-export const getValidateCode = async (form: LoginForm, isClick = false): Promise<void> => {
+export const getValidateCode = async (
+  form: Pick<LoginForm, 'username' | 'code'>,
+  isClick = false,
+  captchaType: 'login' | 'register' = 'login'
+): Promise<void> => {
   if (fetching) return
-  if (isEmpty(form.username)) {
+  // 注册验证码不依赖账号，登录验证码需要账号判断是否启用
+  if (captchaType === 'login' && isEmpty(form.username)) {
     authCodeInfo.captchaEnabled = false
     return
   }
@@ -74,7 +81,7 @@ export const getValidateCode = async (form: LoginForm, isClick = false): Promise
   if (isClick) authCodeInfo.refreshing = true
   try {
     // 返回格式: { code: 200, msg: '操作成功', data: { captchaEnabled, uuid, img } }
-    const { data } = (await getCodeImg(form.username)) as { data?: CaptchaData }
+    const { data } = (await getCodeImg(form.username, captchaType)) as { data?: CaptchaData }
     authCodeInfo.captchaEnabled = Boolean(data?.captchaEnabled)
     authCodeInfo.uuid = data?.uuid || ''
     authCodeInfo.imgUrl = data?.img || ''

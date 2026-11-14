@@ -62,10 +62,11 @@ export class MainService {
   /**
    * 注册
    * @param user
+   * @param ipaddr 客户端 IP，用于注册频率限制
    * @returns
    */
-  async register(user: RegisterDto) {
-    return await this.userService.register(user);
+  async register(user: RegisterDto, ipaddr: string) {
+    return await this.userService.register(user, ipaddr);
   }
 
   /**

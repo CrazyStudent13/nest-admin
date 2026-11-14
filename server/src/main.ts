@@ -4,7 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from 'src/app.module';
-import { HttpExceptionsFilter } from 'src/common/filters/http-exceptions-filter';
+import { AllExceptionsFilter } from 'src/common/filters/all-exceptions-filter';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
@@ -83,7 +83,7 @@ async function bootstrap() {
   app.setGlobalPrefix(prefix);
   // 全局验证
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
-  app.useGlobalFilters(new HttpExceptionsFilter());
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // web 安全，防常见漏洞
   // 注意：开发环境如果开启 nest static module 需要将 crossOriginResourcePolicy 设置为 false 否则静态资源 跨域不可访问

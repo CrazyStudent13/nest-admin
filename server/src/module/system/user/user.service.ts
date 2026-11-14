@@ -605,6 +605,22 @@ export class UserService {
   }
 
   /**
+   * 踢掉指定用户的全部在线会话
+   * 删除/停用/重置密码后必须调用：身份验证只查 Redis 会话快照、不回查用户表，不踢则已登录会话在过期前持续有效
+   * @param userIds
+   */
+  private async kickUserSessions(userIds: number[]) {
+    if (!userIds?.length) return;
+    const keys = await this.redisService.keys(`${CacheEnum.LOGIN_TOKEN_KEY}*`);
+    if (!keys.length) return;
+    const sessions = await this.redisService.mget(keys);
+    const delKeys = keys.filter((key, index) => userIds.includes(sessions[index]?.userId));
+    if (delKeys.length) {
+      await this.redisService.del(delKeys);
+    }
+  }
+
+  /**
    * 重置密码
    * @param body
    * @returns
@@ -625,6 +641,8 @@ export class UserService {
         password: body.password,
       },
     );
+    // 重置密码后立即踢掉全部在线会话，确保旧凭据即刻失效
+    await this.kickUserSessions([body.userId]);
     return ResultData.ok();
   }
 
@@ -634,13 +652,25 @@ export class UserService {
    * @returns
    */
   async remove(ids: number[]) {
-    // 忽略系统角色的删除
-    const data = await this.userRepo.update(
-      { userId: In(ids), userType: Not(SYS_USER_TYPE.SYS) },
-      {
-        delFlag: '1',
+    // 忽略系统用户的删除
+    const targets = await this.userRepo.find({
+      where: {
+        userId: In(ids),
+        userType: Not(SYS_USER_TYPE.SYS),
       },
-    );
+      select: ['userId'],
+    });
+    let data = null;
+    if (targets.length) {
+      data = await this.userRepo.update(
+        { userId: In(targets.map((t) => t.userId)) },
+        {
+          delFlag: '1',
+        },
+      );
+      // 被删用户的在线会话立即失效，避免已登录会话继续操作
+      await this.kickUserSessions(targets.map((t) => t.userId));
+    }
     return ResultData.ok(data);
   }
 
@@ -747,6 +777,10 @@ export class UserService {
         status: changeStatusDto.status,
       },
     );
+    // 停用用户的在线会话立即失效（启用无需处理）
+    if (changeStatusDto.status === StatusEnum.STOP) {
+      await this.kickUserSessions([changeStatusDto.userId]);
+    }
     return ResultData.ok(res);
   }
 

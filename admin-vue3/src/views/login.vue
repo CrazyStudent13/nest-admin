@@ -51,8 +51,8 @@
 
 <script setup lang="ts">
 import useUserStore from '@/store/modules/user'
-import { authCodeInfo, getValidateCode, getUserCookie, setUserCookie, loginLoading } from '@/composables/useLogin'
-import type { LoginForm } from '@/composables/useLogin'
+import { authCodeInfo, getValidateCode, getUserCookie, setUserCookie, loginLoading } from '@/composables/auth/useLogin'
+import type { LoginForm } from '@/composables/auth/useLogin'
 import type { FormInstance } from 'element-plus'
 
 const userStore = useUserStore()
@@ -127,6 +127,11 @@ watch(
 // 先从cookie恢复用户信息，再按该账号的失败次数判断是否需要验证码
 const userData = getUserCookie(loginForm.model)
 Object.assign(loginForm.model, userData)
+// 注册成功跳转回来时预填账号，优先于记住密码的 cookie
+const queryUsername = route.query.username
+if (typeof queryUsername === 'string' && queryUsername.trim()) {
+  loginForm.model.username = queryUsername.trim()
+}
 getValidateCode(loginForm.model)
 </script>
 

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, HttpCode, Res, Headers, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { MainService } from './main.service';
 import { RegisterDto, LoginDto } from './dto/index';
 import { createMath } from 'src/common/utils/captcha';
@@ -59,17 +59,35 @@ export class MainController {
   })
   @Post('/register')
   @HttpCode(200)
-  register(@Body() user: RegisterDto) {
-    return this.mainService.register(user);
+  register(@Body() user: RegisterDto, @ClientInfo() clientInfo: ClientInfoDto) {
+    return this.mainService.register(user, clientInfo.ipaddr);
+  }
+
+  @ApiOperation({
+    summary: '检查账号是否已被注册',
+  })
+  @ApiQuery({
+    name: 'username',
+    required: true,
+    description: '账号，2-50 个字符',
+  })
+  @NotRequireAuth()
+  @Get('/register/check')
+  async checkUsername(@Query('username') username: string) {
+    const name = (username || '').trim();
+    if (name.length < 2 || name.length > 50) {
+      return ResultData.fail(400, '账号长度必须为 2 到 50 个字符');
+    }
+    return await this.mainService.checkUsername(name);
   }
 
   @ApiOperation({
     summary: '获取验证图片',
   })
   @Get('/captchaImage')
-  async captchaImage(@Query('username') username: string, @Res() res) {
-    // 只有该账号连续登录失败达到阈值时才需要验证码
-    const required = await isCaptchaRequired(this.configService, this.redisService, username);
+  async captchaImage(@Query('username') username: string, @Query('type') type: string, @Res() res) {
+    // type=register：注册验证码无条件生成；默认登录场景按账号失败次数动态判断
+    const required = type === 'register' ? true : await isCaptchaRequired(this.configService, this.redisService, username);
 
     const data = {
       captchaEnabled: required,

@@ -199,7 +199,7 @@ export class UploadService {
   thunkStreamMergeProgress(fileList, fileWriteStream, sourceFilesDir, onResolve) {
     if (!fileList.length) {
       // 删除临时目录
-      fs.rmdirSync(sourceFilesDir, { recursive: true });
+      this.removeChunkDirSafely(sourceFilesDir);
       onResolve();
       return;
     }
@@ -214,6 +214,23 @@ export class UploadService {
       // 拼接完之后进入下一次循环
       this.thunkStreamMergeProgress(fileList, fileWriteStream, sourceFilesDir, onResolve);
     });
+  }
+
+  /**
+   * 安全清理分片临时目录
+   * Windows 下最后一片的文件句柄释放存在时序竞态，同步删除可能 ENOTEMPTY；
+   * 清理发生在流事件回调中，异常会绕过请求生命周期直接炸掉进程，故重试后仍失败则保留现场仅告警
+   */
+  private removeChunkDirSafely(dir: string, retries = 3) {
+    try {
+      fs.rmSync(dir, { recursive: true, force: true });
+    } catch (error) {
+      if (retries > 0) {
+        setTimeout(() => this.removeChunkDirSafely(dir, retries - 1), 100);
+      } else {
+        console.warn(`[上传] 分片临时目录清理失败，已保留（clearTemp 定时任务会兜底清理）: ${dir}`, error?.message);
+      }
+    }
   }
 
   /**

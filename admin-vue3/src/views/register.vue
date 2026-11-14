@@ -19,6 +19,14 @@
             <lock class="input-icon" />
           </template>
         </el-input>
+        <div v-if="registerForm.password" class="pwd-strength">
+          <div class="pwd-strength-bars">
+            <span :class="{ active: pwdStrength >= 1 }"></span>
+            <span :class="{ active: pwdStrength >= 2 }"></span>
+            <span :class="{ active: pwdStrength >= 3 }"></span>
+          </div>
+          <span class="pwd-strength-text" :class="`level-${pwdStrength}`">{{ pwdStrengthLabel }}</span>
+        </div>
       </el-form-item>
       <el-form-item prop="confirmPassword">
         <el-input v-model="registerForm.confirmPassword" auto-complete="new-password" maxlength="20" placeholder="确认密码" size="large" type="password" show-password @keyup.enter="handleRegister">
@@ -26,6 +34,16 @@
             <lock class="input-icon" />
           </template>
         </el-input>
+      </el-form-item>
+      <el-form-item prop="code">
+        <div class="code-input-container">
+          <el-input v-model.trim="registerForm.code" auto-complete="off" maxlength="3" placeholder="验证码" size="large" style="width: 63%" @keyup.enter="handleRegister">
+            <template #prefix>
+              <svg-icon class="input-icon" icon-class="validCode" />
+            </template>
+          </el-input>
+          <captcha-code :img-url="authCodeInfo.imgUrl" :refreshing="authCodeInfo.refreshing" size="large" @refresh="handleRefreshCaptcha" />
+        </div>
       </el-form-item>
 
       <el-form-item style="width: 100%">
@@ -46,6 +64,8 @@
 
 <script setup lang="ts">
 import { register } from '@/api/login'
+import { authCodeInfo, getValidateCode } from '@/composables/auth/useLogin'
+import { createRegisterRules, computePasswordStrength } from '@/composables/auth/useRegisterCheck'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 
@@ -56,7 +76,9 @@ const registerLoading = ref(false)
 const registerForm = reactive({
   username: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  code: '',
+  uuid: ''
 })
 
 // 密码变化时重新校验确认密码，避免陈旧的"两次密码不一致"提示残留
@@ -69,29 +91,13 @@ watch(
   }
 )
 
-const registerRules = {
-  username: [
-    { required: true, trigger: 'blur', message: '请输入您的账号' },
-    { min: 2, max: 50, trigger: 'blur', message: '账号长度必须为 2 到 50 个字符' }
-  ],
-  password: [
-    { required: true, trigger: 'blur', message: '请输入您的密码' },
-    { min: 5, max: 20, trigger: 'blur', message: '密码长度必须为 5 到 20 个字符' }
-  ],
-  confirmPassword: [
-    { required: true, trigger: 'blur', message: '请再次输入您的密码' },
-    {
-      validator: (_rule: any, value: string, callback: (error?: Error) => void) => {
-        if (value !== registerForm.password) {
-          callback(new Error('两次输入的密码不一致'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ]
-}
+// 注册校验规则统一由 useRegisterCheck 维护（账号占用 + 密码强度 + 两次一致）
+const registerRules = createRegisterRules(registerForm)
+
+// 密码强度提示条：0=未输入 1=弱 2=中 3=强
+const pwdStrength = computed(() => computePasswordStrength(registerForm.password))
+const STRENGTH_LABELS = ['', '弱', '中', '强'] as const
+const pwdStrengthLabel = computed(() => STRENGTH_LABELS[pwdStrength.value])
 
 // 注册处理（防抖防止连点，loading 防止请求期间回车重复提交）
 const handleRegister = useDebounce(() => {
@@ -99,13 +105,16 @@ const handleRegister = useDebounce(() => {
   registerRef.value?.validate((valid) => {
     if (valid) {
       registerLoading.value = true
-      register(registerForm.username, registerForm.password)
+      registerForm.uuid = authCodeInfo.uuid
+      register(registerForm.username, registerForm.password, registerForm.code, registerForm.uuid)
         .then(() => {
           ElMessage.success('注册成功')
-          router.push('/login')
+          // 跳转登录页并带上账号，由登录页读取 query 预填
+          router.push({ path: '/login', query: { username: registerForm.username } })
         })
         .catch(() => {
-          // 失败提示由请求拦截器统一展示（如"注册账号已存在"）
+          // 失败提示由请求拦截器统一展示（如"注册账号已存在"），验证码作废需刷新
+          getValidateCode(registerForm, true, 'register')
         })
         .finally(() => {
           registerLoading.value = false
@@ -113,6 +122,14 @@ const handleRegister = useDebounce(() => {
     }
   })
 }, 500)
+
+// 刷新验证码（防抖）
+const handleRefreshCaptcha = useDebounce(() => {
+  getValidateCode(registerForm, true, 'register')
+}, 1000)
+
+// 注册验证码与账号无关，进入页面即获取
+getValidateCode(registerForm, false, 'register')
 </script>
 
 <style lang="scss" scoped>
@@ -147,6 +164,67 @@ const handleRegister = useDebounce(() => {
   .go-login {
     margin: 0px 0px 15px 0px;
     text-align: right;
+  }
+
+  .code-input-container {
+    display: flex;
+    gap: 2%; // 输入框和验证码之间的间距
+    align-items: center; // 垂直居中对齐
+
+    .el-input {
+      flex: 1;
+    }
+  }
+
+  .pwd-strength {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+
+    .pwd-strength-bars {
+      flex: 1;
+      display: flex;
+      gap: 4px;
+
+      span {
+        height: 4px;
+        flex: 1;
+        border-radius: 2px;
+        background: #e4e7ed;
+        transition: background-color 0.3s;
+
+        &:nth-child(1).active {
+          background: #f56c6c;
+        }
+
+        &:nth-child(2).active {
+          background: #e6a23c;
+        }
+
+        &:nth-child(3).active {
+          background: #67c23a;
+        }
+      }
+    }
+
+    .pwd-strength-text {
+      font-size: 12px;
+      color: #909399;
+
+      &.level-1 {
+        color: #f56c6c;
+      }
+
+      &.level-2 {
+        color: #e6a23c;
+      }
+
+      &.level-3 {
+        color: #67c23a;
+      }
+    }
   }
 }
 

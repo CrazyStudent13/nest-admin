@@ -16,7 +16,7 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form v-show="user.showSearch" ref="user.queryRef" v-no-enter :inline="true" label-width="68px"
+        <el-form v-show="user.showSearch" ref="queryRef" v-no-enter :inline="true" label-width="68px"
           :model="user.queryParams">
           <el-form-item label="用户账号" prop="userName">
             <el-input v-model.trim="user.queryParams.userName" clearable placeholder="请输入用户账号" style="width: 240px"
@@ -331,11 +331,11 @@ const { sys_normal_disable, sys_user_sex } = useDict('sys_normal_disable', 'sys_
 const userRef = ref(null)
 const deptTreeRef = ref(null)
 const uploadRef = ref(null)
+const queryRef = ref(null)
 
 // ==================== 用户管理（集中式管理） ====================
 const user = reactive({
   // 响应式数据
-  queryRef: null,
   userList: [],
   open: false,
   loading: true,
@@ -487,7 +487,7 @@ const user = reactive({
   // 重置按钮操作
   resetQuery: () => {
     user.dateRange = []
-    resetForm(user.queryRef)
+    resetForm(queryRef.value)
     user.queryParams.deptId = undefined
     deptTreeRef.value.setCurrentKey(null)
     user.handleQuery()

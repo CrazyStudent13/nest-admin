@@ -35,10 +35,12 @@ export function logout() {
 }
 
 // 注册方法
-export function register(username, password) {
+export function register(username, password, code, uuid) {
   const data = {
     username,
-    password
+    password,
+    code,
+    uuid
   }
   return request({
     url: '/register',
@@ -50,15 +52,27 @@ export function register(username, password) {
   })
 }
 
+// 检查账号是否已被注册
+export function checkUsername(username) {
+  return request({
+    url: '/register/check',
+    headers: {
+      isToken: false
+    },
+    method: 'get',
+    params: { username }
+  })
+}
+
 // 获取验证码
-export function getCodeImg(username) {
+export function getCodeImg(username, type) {
   return request({
     url: '/captchaImage',
     headers: {
       isToken: false
     },
     method: 'get',
-    params: { username },
+    params: { username, type },
     timeout: 20000
   })
 }
